@@ -19,6 +19,9 @@ public class AuthService {
     private final JwtUtils jwtUtils;
 
     public AuthResponse signup(SignupRequest request) {
+        if (userRepository.findByEmailAndProjectRef(request.getEmail(), request.getProjectRef()).isPresent()) {
+            throw new RuntimeException("Email already registered in this project");
+        }
         User user = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
