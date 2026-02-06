@@ -1,5 +1,6 @@
 package com.jauharxlr.springbase.admin.controller;
 
+import com.jauharxlr.springbase.common.dto.ErrorResponse;
 import com.jauharxlr.springbase.engine.service.DynamicDbService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/v1")
 @RequiredArgsConstructor
-@Tag(name = "Admin / AI-First Workflow", description = "Privileged endpoints for database management and AI integrations. Requires 'service_role'.")
+@Tag(name = "Admin / AI-First Workflow", description = "Privileged endpoints for database management and AI integrations. Requires 'service_role' or administrative JWT.")
 @SecurityRequirement(name = "bearerAuth")
 public class AdminController {
 
@@ -28,13 +29,17 @@ public class AdminController {
         summary = "SupaShell SQL Editor",
         description = "Executes raw SQL statements directly against the database. " +
                       "**Security Warning**: This endpoint bypasses all ownership security and project isolation. " +
-                      "It should only be used for administrative migrations or maintenance."
+                      "It is intended for administrative migrations, maintenance, or initial project setup. " +
+                      "Supported statements: CREATE, ALTER, DROP, TRUNCATE, etc."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "SQL successfully executed"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - JWT required"),
-        @ApiResponse(responseCode = "403", description = "Forbidden - 'service_role' required"),
-        @ApiResponse(responseCode = "500", description = "SQL syntax error or database constraint violation")
+        @ApiResponse(responseCode = "401", description = "Unauthorized - JWT required",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "403", description = "Forbidden - 'service_role' required",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "500", description = "SQL syntax error or database constraint violation",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping("/sql")
     public ResponseEntity<Object> executeSql(@RequestBody SqlRequest request) {
@@ -45,14 +50,18 @@ public class AdminController {
     @Operation(
         summary = "JSON-to-DDL Schema Apply",
         description = "Accepts a high-level JSON representation of a database schema and applies it. " +
-                      "This is designed for AI coding assistants to generate backend schemas on the fly. " +
-                      "It will automatically create tables and columns as specified."
+                      "This is specifically designed for AI coding assistants to generate backend schemas on the fly. " +
+                      "The service will automatically create tables and columns as specified in the payload. " +
+                      "If a table already exists, it will use 'CREATE TABLE IF NOT EXISTS' semantics."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Schema successfully applied"),
-        @ApiResponse(responseCode = "400", description = "Invalid JSON schema definition"),
-        @ApiResponse(responseCode = "403", description = "Forbidden - 'service_role' required"),
-        @ApiResponse(responseCode = "500", description = "Database error during execution")
+        @ApiResponse(responseCode = "400", description = "Invalid JSON schema definition",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "403", description = "Forbidden - 'service_role' required",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "500", description = "Database error during execution",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping("/schema/apply")
     public ResponseEntity<Object> applySchema(@RequestBody SchemaDefinition schema) {
@@ -79,34 +88,38 @@ public class AdminController {
     @Data
     @Schema(description = "Request object for SupaShell SQL execution")
     public static class SqlRequest {
-        @Schema(example = "CREATE TABLE users_ext (id UUID PRIMARY KEY, bio TEXT, user_id UUID)")
+        @Schema(description = "The raw SQL query to execute", example = "CREATE TABLE profile (id UUID PRIMARY KEY, bio TEXT, user_id UUID)")
         private String sql;
     }
 
     @Data
-    @Schema(description = "JSON representation of a database schema")
+    @Schema(description = "JSON representation of a complete database schema")
     public static class SchemaDefinition {
+        @Schema(description = "List of tables to be created")
         private List<TableDefinition> tables;
     }
 
     @Data
     @Schema(description = "Table structure definition")
     public static class TableDefinition {
-        @Schema(example = "tasks")
+        @Schema(description = "Name of the table", example = "tasks")
         private String name;
+        @Schema(description = "List of columns for this table")
         private List<ColumnDefinition> columns;
     }
 
     @Data
     @Schema(description = "Column structure definition")
     public static class ColumnDefinition {
-        @Schema(example = "title")
+        @Schema(description = "Name of the column", example = "title")
         private String name;
-        @Schema(example = "VARCHAR(255)")
+        @Schema(description = "SQL data type of the column", example = "VARCHAR(255)")
         private String type;
+        @Schema(description = "Whether the column is a primary key", example = "false")
         private boolean primaryKey;
+        @Schema(description = "Whether the column can contain NULL values", example = "true")
         private boolean nullable = true;
-        @Schema(example = "'Untitled'")
+        @Schema(description = "Default value for the column", example = "'Untitled'")
         private String defaultValue;
     }
 }

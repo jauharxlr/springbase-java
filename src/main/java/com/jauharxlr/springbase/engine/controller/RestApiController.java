@@ -1,5 +1,6 @@
 package com.jauharxlr.springbase.engine.controller;
 
+import com.jauharxlr.springbase.common.dto.ErrorResponse;
 import com.jauharxlr.springbase.engine.service.DynamicDbService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -31,24 +32,36 @@ public class RestApiController {
 
     @Operation(
         summary = "Query a table",
-        description = "Fetches records from a user-defined table. " +
+        description = "Fetches records from a user-defined table using PostgREST-style syntax. " +
                       "**Ownership Security**: If the table contains a 'user_id' or 'owner_id' column, the query is automatically filtered to return only records owned by the authenticated user. " +
-                      "**Filters**: Supports PostgREST-style filters via query parameters (e.g., `column=eq.value`, `age=gt.25`). " +
-                      "Available operators: eq, gt, gte, lt, lte, neq, like, ilike.",
+                      "**Filters**: Supports filters via query parameters (e.g., `?age=gt.25&status=eq.active`). " +
+                      "**Operators**: " +
+                      "- `eq`: Equals " +
+                      "- `neq`: Not equals " +
+                      "- `gt`: Greater than " +
+                      "- `gte`: Greater than or equal " +
+                      "- `lt`: Less than " +
+                      "- `lte`: Less than or equal " +
+                      "- `like`: Pattern matching (case-sensitive) " +
+                      "- `ilike`: Pattern matching (case-insensitive)",
         parameters = {
-            @Parameter(name = "table", description = "The name of the table to query", required = true, in = ParameterIn.PATH),
-            @Parameter(name = "select", description = "Comma-separated list of columns to return (future support)", in = ParameterIn.QUERY),
-            @Parameter(name = "order", description = "Order results (future support)", in = ParameterIn.QUERY),
-            @Parameter(name = "limit", description = "Limit number of records (future support)", in = ParameterIn.QUERY)
+            @Parameter(name = "table", description = "The name of the database table to query", required = true, in = ParameterIn.PATH, example = "tasks"),
+            @Parameter(name = "select", description = "Columns to include in response (comma-separated). *Currently returns all columns*.", in = ParameterIn.QUERY, example = "id,title,status"),
+            @Parameter(name = "order", description = "Sort order (e.g. `id.asc`, `created_at.desc`). *Coming soon*.", in = ParameterIn.QUERY),
+            @Parameter(name = "limit", description = "Maximum number of records to return. *Coming soon*.", in = ParameterIn.QUERY, example = "10")
         }
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successful query", 
-                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Map.class)))),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Valid JWT required"),
-        @ApiResponse(responseCode = "403", description = "Forbidden - Access denied by security policies"),
-        @ApiResponse(responseCode = "404", description = "Table not found"),
-        @ApiResponse(responseCode = "500", description = "Database error or malformed filter")
+        @ApiResponse(responseCode = "200", description = "Successful query. Returns an array of objects matching the criteria.", 
+                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Map.class, example = "{\"id\": 1, \"title\": \"Buy milk\", \"user_id\": \"...\"}")))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Valid JWT required",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Access denied by security policies",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Table not found in the project schema",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "500", description = "Database error or malformed filter expression",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/{table}")
     public ResponseEntity<List<Map<String, Object>>> get(
@@ -64,18 +77,22 @@ public class RestApiController {
     @Operation(
         summary = "Insert into a table",
         description = "Inserts a new record into a user-defined table. " +
-                      "**Ownership Injection**: If the table contains a 'user_id' or 'owner_id' column, it is automatically populated with the authenticated user's UUID from the JWT."
+                      "**Ownership Injection**: If the table contains a 'user_id' or 'owner_id' column, it is automatically populated with the authenticated user's UUID from the JWT. " +
+                      "The body should be a JSON object where keys correspond to column names."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Record successfully created"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Valid JWT required"),
-        @ApiResponse(responseCode = "400", description = "Malformed JSON or data type mismatch"),
-        @ApiResponse(responseCode = "500", description = "Database error")
+        @ApiResponse(responseCode = "400", description = "Malformed JSON, data type mismatch, or missing required columns",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Valid JWT required",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "500", description = "Database error or constraint violation",
+                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping("/{table}")
     public ResponseEntity<Void> post(
             @PathVariable String table,
-            @RequestBody Map<String, Object> data) {
+            @RequestBody @Schema(example = "{\"title\": \"Finish homework\", \"completed\": false}") Map<String, Object> data) {
         
         String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         dynamicDbService.insert(table, userId, data);
