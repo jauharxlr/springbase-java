@@ -21,3 +21,7 @@ SupaSpring is a high-performance, open-source alternative to Supabase, built ent
 
 - [BRD](BRD_SUPA_SPRING.md)
 - [SRS](SRS_SUPA_SPRING.md)
+- **Interactive API Docs**: Enhanced Swagger (SpringDoc) UI is available at `http://localhost:1890/swagger-ui.html`. 
+  - Exhaustive details for Auth, Dynamic DB, and Admin APIs.
+  - Comprehensive parameter, response, and error code (400, 401, 403, 404, 500) documentation.
+  - Example payloads for AI-assisted schema generation and CRUD operations.
