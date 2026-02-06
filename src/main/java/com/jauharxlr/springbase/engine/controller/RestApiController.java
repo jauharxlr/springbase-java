@@ -30,6 +30,23 @@ public class RestApiController {
 
     private final DynamicDbService dynamicDbService;
 
+    @GetMapping("/tables")
+    public ResponseEntity<List<String>> listTables() {
+        return ResponseEntity.ok(dynamicDbService.getTables());
+    }
+
+    @PostMapping("/tables")
+    public ResponseEntity<Void> createTable(@RequestBody TableRequest request) {
+        dynamicDbService.createTable(request.getName(), request.getColumns());
+        return ResponseEntity.status(201).build();
+    }
+
+    @lombok.Data
+    public static class TableRequest {
+        private String name;
+        private List<Map<String, Object>> columns;
+    }
+
     @Operation(
         summary = "Query a table",
         description = "Fetches records from a user-defined table using PostgREST-style syntax. " +

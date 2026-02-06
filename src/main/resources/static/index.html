@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpringBase Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .sidebar-item.active { background-color: #f3f4f6; border-right: 4px solid #3b82f6; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen">
+
+    <!-- Auth Overlay (Hidden if logged in) -->
+    <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm hidden">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
+            <div class="flex justify-between mb-8">
+                <button onclick="showAuth('login')" id="btn-login-tab" class="text-xl font-bold border-b-2 border-blue-600 pb-2">Login</button>
+                <button onclick="showAuth('signup')" id="btn-signup-tab" class="text-xl font-bold text-gray-400 pb-2">Sign Up</button>
+            </div>
+            
+            <div id="login-form">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" id="login-email" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="you@example.com">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Password</label>
+                        <input type="password" id="login-password" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="••••••••">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Project Reference</label>
+                        <input type="text" id="login-project" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="my-awesome-project">
+                    </div>
+                    <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition">Sign In</button>
+                </div>
+            </div>
+
+            <div id="signup-form" class="hidden">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                        <input type="text" id="signup-name" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="John Doe">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" id="signup-email" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="you@example.com">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Password</label>
+                        <input type="password" id="signup-password" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="••••••••">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Project Reference</label>
+                        <input type="text" id="signup-project" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="my-awesome-project">
+                    </div>
+                    <button onclick="handleSignup()" class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">Create Account</button>
+                </div>
+            </div>
+            <p id="auth-error" class="text-red-500 text-sm mt-4 text-center hidden"></p>
+        </div>
+    </div>
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 glass border-r border-gray-200 flex flex-col">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-blue-600 flex items-center">
+                    <i class="fas fa-bolt mr-2"></i> SpringBase
+                </h1>
+            </div>
+            
+            <nav class="flex-1 px-4 space-y-2 mt-4">
+                <button onclick="showSection('home')" id="nav-home" class="sidebar-item active w-full flex items-center p-3 text-gray-700 rounded-xl transition">
+                    <i class="fas fa-home w-6"></i> Home
+                </button>
+                <button onclick="showSection('tables')" id="nav-tables" class="sidebar-item w-full flex items-center p-3 text-gray-700 rounded-xl transition">
+                    <i class="fas fa-table w-6"></i> Table Browser
+                </button>
+                <button onclick="showSection('create')" id="nav-create" class="sidebar-item w-full flex items-center p-3 text-gray-700 rounded-xl transition">
+                    <i class="fas fa-plus-circle w-6"></i> Create Table
+                </button>
+                <button onclick="showSection('sql')" id="nav-sql" class="sidebar-item w-full flex items-center p-3 text-gray-700 rounded-xl transition">
+                    <i class="fas fa-terminal w-6"></i> SQL Console
+                </button>
+            </nav>
+
+            <div class="p-4 border-t border-gray-200">
+                <div id="user-info" class="flex items-center space-x-3 mb-4 hidden">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold" id="user-avatar">?</div>
+                    <div class="flex-1 overflow-hidden">
+                        <p class="text-sm font-semibold truncate" id="user-name">User</p>
+                        <p class="text-xs text-gray-500 truncate" id="user-email">email@example.com</p>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" id="btn-logout" class="w-full flex items-center p-3 text-red-600 rounded-xl hover:bg-red-50 transition hidden">
+                    <i class="fas fa-sign-out-alt w-6"></i> Logout
+                </button>
+                <button onclick="openAuth()" id="btn-login-prompt" class="w-full flex items-center p-3 text-blue-600 rounded-xl hover:bg-blue-50 transition">
+                    <i class="fas fa-sign-in-alt w-6"></i> Sign In
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-8 relative">
+            
+            <!-- Home Section -->
+            <section id="sec-home" class="section space-y-12">
+                <div class="max-w-4xl">
+                    <h2 class="text-5xl font-extrabold text-gray-900 mb-6">Welcome to your <span class="text-blue-600">Dynamic Backend</span>.</h2>
+                    <p class="text-xl text-gray-600 mb-8 leading-relaxed">SpringBase gives you instant REST APIs, Authentication, and Realtime capabilities. Built on Spring Boot with H2/PostgreSQL compatibility.</p>
+                    
+                    <div class="flex space-x-4">
+                        <a href="/swagger-ui.html" target="_blank" class="bg-gray-900 text-white px-8 py-4 rounded-2xl font-bold flex items-center hover:bg-gray-800 transition shadow-lg">
+                            <i class="fas fa-book mr-3"></i> View API Documentation
+                        </a>
+                        <button onclick="showSection('tables')" class="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center hover:bg-blue-700 transition shadow-lg">
+                            <i class="fas fa-rocket mr-3"></i> Explore Tables
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                        <div class="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 mb-4 text-xl">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Secure by Default</h3>
+                        <p class="text-gray-500">Built-in JWT authentication with automatic row-level ownership security.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                        <div class="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 mb-4 text-xl">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Instant APIs</h3>
+                        <p class="text-gray-500">Create a table and get CRUD REST endpoints immediately at /rest/v1.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                        <div class="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-green-600 mb-4 text-xl">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">SQL Console</h3>
+                        <p class="text-gray-500">Run complex queries and migrations directly through the SupaShell editor.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tables Section -->
+            <section id="sec-tables" class="section hidden space-y-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-3xl font-bold">Table Browser</h2>
+                        <p class="text-gray-500">View and manage your data across different tables.</p>
+                    </div>
+                    <button onclick="refreshTables()" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+
+                <div class="flex space-x-6">
+                    <div class="w-1/4 bg-white rounded-2xl shadow-sm border border-gray-100 p-4 h-[600px] overflow-y-auto">
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Your Tables</h3>
+                        <div id="table-list" class="space-y-1">
+                            <!-- Tables will be injected here -->
+                            <p class="text-sm text-gray-400 italic">No tables found.</p>
+                        </div>
+                    </div>
+                    <div class="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-[600px] flex flex-col">
+                        <div id="table-data-header" class="mb-4 flex justify-between items-center">
+                            <h3 id="current-table-name" class="text-xl font-bold text-gray-800">Select a table</h3>
+                            <div id="table-actions" class="hidden">
+                                <button onclick="openInsertRow()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
+                                    Add Row
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex-1 overflow-auto rounded-lg border border-gray-100" id="table-container">
+                            <table class="min-w-full divide-y divide-gray-200" id="data-table">
+                                <thead class="bg-gray-50" id="data-table-head"></thead>
+                                <tbody class="bg-white divide-y divide-gray-200" id="data-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Create Table Section -->
+            <section id="sec-create" class="section hidden space-y-8">
+                <div>
+                    <h2 class="text-3xl font-bold">Create New Table</h2>
+                    <p class="text-gray-500">Define your schema and start storing data instantly.</p>
+                </div>
+
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 max-w-2xl">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Table Name</label>
+                            <input type="text" id="new-table-name" class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border" placeholder="e.g. products">
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <label class="block text-sm font-medium text-gray-700">Columns</label>
+                                <button onclick="addColumnRow()" class="text-blue-600 text-sm font-bold hover:underline">
+                                    + Add Column
+                                </button>
+                            </div>
+                            <div id="columns-list" class="space-y-3">
+                                <!-- Default ID column -->
+                                <div class="flex space-x-2 items-center">
+                                    <input type="text" value="id" disabled class="bg-gray-50 w-1/3 rounded-lg border-gray-200 p-2 text-sm">
+                                    <select disabled class="bg-gray-50 w-1/3 rounded-lg border-gray-200 p-2 text-sm">
+                                        <option>UUID</option>
+                                    </select>
+                                    <span class="text-xs text-gray-400 font-medium">Primary Key</span>
+                                </div>
+                                <div class="flex space-x-2 items-center">
+                                    <input type="text" value="user_id" disabled class="bg-gray-50 w-1/3 rounded-lg border-gray-200 p-2 text-sm">
+                                    <select disabled class="bg-gray-50 w-1/3 rounded-lg border-gray-200 p-2 text-sm">
+                                        <option>UUID</option>
+                                    </select>
+                                    <span class="text-xs text-gray-400 font-medium">Ownership</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="handleCreateTable()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg">
+                            Create Table
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SQL Console Section -->
+            <section id="sec-sql" class="section hidden space-y-8">
+                <div>
+                    <h2 class="text-3xl font-bold">SupaShell SQL Editor</h2>
+                    <p class="text-gray-500">Run raw SQL queries directly against your database.</p>
+                </div>
+
+                <div class="bg-gray-900 rounded-3xl overflow-hidden shadow-2xl">
+                    <div class="bg-gray-800 px-6 py-3 flex justify-between items-center">
+                        <div class="flex space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <span class="text-xs text-gray-400 font-mono">SQL Console</span>
+                        <button onclick="runSql()" class="bg-green-600 text-white px-6 py-1 rounded-lg text-sm font-bold hover:bg-green-700 transition">
+                            Run
+                        </button>
+                    </div>
+                    <textarea id="sql-editor" class="w-full h-64 bg-gray-900 text-green-400 p-6 font-mono focus:outline-none resize-none" placeholder="-- Enter your SQL here&#10;SELECT * FROM users;"></textarea>
+                </div>
+
+                <div id="sql-result-container" class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 hidden">
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Execution Results</h3>
+                    <div id="sql-message" class="text-sm"></div>
+                    <div class="overflow-auto max-h-64 mt-4" id="sql-table-container"></div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-8 right-8 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-2xl transition-all transform translate-y-24 opacity-0 flex items-center">
+        <span id="toast-message">Action successful</span>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let token = localStorage.getItem('token');
+        let projectRef = localStorage.getItem('projectRef');
+
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            if (token) {
+                verifySession();
+            }
+            showSection('home');
+        });
+
+        function showSection(name) {
+            document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`sec-${name}`).classList.remove('hidden');
+            
+            document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+            document.getElementById(`nav-${name}`).classList.add('active');
+
+            if (name === 'tables') refreshTables();
+        }
+
+        function showAuth(type) {
+            const isLogin = type === 'login';
+            document.getElementById('login-form').classList.toggle('hidden', !isLogin);
+            document.getElementById('signup-form').classList.toggle('hidden', isLogin);
+            
+            document.getElementById('btn-login-tab').className = isLogin 
+                ? 'text-xl font-bold border-b-2 border-blue-600 pb-2' 
+                : 'text-xl font-bold text-gray-400 pb-2';
+            document.getElementById('btn-signup-tab').className = !isLogin 
+                ? 'text-xl font-bold border-b-2 border-blue-600 pb-2' 
+                : 'text-xl font-bold text-gray-400 pb-2';
+        }
+
+        function openAuth() {
+            document.getElementById('auth-overlay').classList.remove('hidden');
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const project = document.getElementById('login-project').value;
+
+            try {
+                const res = await fetch('/auth/v1/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, projectRef: project })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    saveSession(data.accessToken, project, data.user);
+                    location.reload();
+                } else {
+                    const error = await res.json();
+                    showAuthError(error.message || 'Login failed');
+                }
+            } catch (err) {
+                showAuthError('Connection failed');
+            }
+        }
+
+        async function handleSignup() {
+            const fullName = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const project = document.getElementById('signup-project').value;
+
+            try {
+                const res = await fetch('/auth/v1/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fullName, email, password, projectRef: project })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    saveSession(data.accessToken, project, data.user);
+                    location.reload();
+                } else {
+                    const error = await res.json();
+                    showAuthError(error.message || 'Signup failed');
+                }
+            } catch (err) {
+                showAuthError('Connection failed');
+            }
+        }
+
+        function saveSession(jwt, pref, user) {
+            localStorage.setItem('token', jwt);
+            localStorage.setItem('projectRef', pref);
+            localStorage.setItem('user', JSON.stringify(user));
+        }
+
+        function handleLogout() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        function verifySession() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (user) {
+                document.getElementById('user-info').classList.remove('hidden');
+                document.getElementById('btn-logout').classList.remove('hidden');
+                document.getElementById('btn-login-prompt').classList.add('hidden');
+                document.getElementById('user-name').textContent = user.fullName || 'User';
+                document.getElementById('user-email').textContent = user.email;
+                document.getElementById('user-avatar').textContent = (user.fullName || 'U')[0].toUpperCase();
+                document.getElementById('auth-overlay').classList.add('hidden');
+            }
+        }
+
+        function showAuthError(msg) {
+            const el = document.getElementById('auth-error');
+            el.textContent = msg;
+            el.classList.remove('hidden');
+        }
+
+        // Tables Logic
+        async function refreshTables() {
+            if (!token) return;
+            try {
+                const res = await fetch('/rest/v1/tables', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const tables = await res.json();
+                const list = document.getElementById('table-list');
+                list.innerHTML = '';
+                
+                tables.filter(t => !['USERS', 'USER_ROLES', 'ROLES'].includes(t.toUpperCase())).forEach(table => {
+                    const btn = document.createElement('button');
+                    btn.className = 'w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-gray-100 transition truncate';
+                    btn.innerHTML = `<i class="fas fa-table mr-2 text-gray-400"></i> ${table}`;
+                    btn.onclick = () => loadTableData(table);
+                    list.appendChild(btn);
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadTableData(table) {
+            document.getElementById('current-table-name').textContent = table;
+            document.getElementById('table-actions').classList.remove('hidden');
+            
+            try {
+                const res = await fetch(`/rest/v1/${table}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                const head = document.getElementById('data-table-head');
+                const body = document.getElementById('data-table-body');
+                head.innerHTML = '';
+                body.innerHTML = '';
+
+                if (data.length > 0) {
+                    const columns = Object.keys(data[0]);
+                    const trHead = document.createElement('tr');
+                    columns.forEach(col => {
+                        const th = document.createElement('th');
+                        th.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                        th.textContent = col;
+                        trHead.appendChild(th);
+                    });
+                    head.appendChild(trHead);
+
+                    data.forEach(row => {
+                        const trBody = document.createElement('tr');
+                        columns.forEach(col => {
+                            const td = document.createElement('td');
+                            td.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+                            td.textContent = row[col];
+                            trBody.appendChild(td);
+                        });
+                        body.appendChild(trBody);
+                    });
+                } else {
+                    body.innerHTML = '<tr><td class="px-6 py-4 text-center text-gray-400 italic">No data found in this table.</td></tr>';
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Create Table Logic
+        function addColumnRow() {
+            const container = document.getElementById('columns-list');
+            const div = document.createElement('div');
+            div.className = 'flex space-x-2 items-center';
+            div.innerHTML = `
+                <input type="text" placeholder="Column Name" class="col-name w-1/3 rounded-lg border-gray-300 p-2 text-sm border shadow-sm">
+                <select class="col-type w-1/3 rounded-lg border-gray-300 p-2 text-sm border shadow-sm">
+                    <option value="VARCHAR(255)">TEXT</option>
+                    <option value="INTEGER">NUMBER</option>
+                    <option value="BOOLEAN">BOOLEAN</option>
+                    <option value="TIMESTAMP">TIMESTAMP</option>
+                    <option value="UUID">UUID</option>
+                </select>
+                <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+            `;
+            container.appendChild(div);
+        }
+
+        async function handleCreateTable() {
+            const name = document.getElementById('new-table-name').value;
+            if (!name) return alert('Enter table name');
+
+            const columns = [
+                { name: 'id', type: 'UUID', primaryKey: true, nullable: false },
+                { name: 'user_id', type: 'UUID', primaryKey: false, nullable: false }
+            ];
+
+            document.querySelectorAll('.col-name').forEach((input, i) => {
+                const type = document.querySelectorAll('.col-type')[i].value;
+                if (input.value) {
+                    columns.push({ name: input.value, type: type, primaryKey: false, nullable: true });
+                }
+            });
+
+            try {
+                const res = await fetch('/rest/v1/tables', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name, columns })
+                });
+
+                if (res.ok) {
+                    showToast('Table created successfully!');
+                    showSection('tables');
+                } else {
+                    alert('Failed to create table');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // SQL Logic
+        async function runSql() {
+            const sql = document.getElementById('sql-editor').value;
+            const resultContainer = document.getElementById('sql-result-container');
+            const messageEl = document.getElementById('sql-message');
+            const tableContainer = document.getElementById('sql-table-container');
+
+            resultContainer.classList.remove('hidden');
+            messageEl.textContent = 'Running...';
+            tableContainer.innerHTML = '';
+
+            try {
+                const res = await fetch('/admin/v1/sql', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ sql })
+                });
+
+                if (res.ok) {
+                    messageEl.innerHTML = '<span class="text-green-600 font-bold">Success!</span> Statement executed successfully.';
+                    showToast('SQL Executed');
+                } else {
+                    const err = await res.json();
+                    messageEl.innerHTML = `<span class="text-red-600 font-bold">Error:</span> ${err.message}`;
+                }
+            } catch (err) {
+                messageEl.textContent = 'Connection error';
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = msg;
+            t.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => {
+                t.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        function openInsertRow() {
+            const table = document.getElementById('current-table-name').textContent;
+            const val = prompt(`Insert data for ${table} (JSON format):`, '{"name": "example"}');
+            if (val) {
+                try {
+                    const data = JSON.parse(val);
+                    insertRow(table, data);
+                } catch(e) {
+                    alert('Invalid JSON');
+                }
+            }
+        }
+
+        async function insertRow(table, data) {
+            try {
+                const res = await fetch(`/rest/v1/${table}`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    showToast('Row added!');
+                    loadTableData(table);
+                } else {
+                    alert('Failed to insert row');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -105,6 +105,37 @@ public class DynamicDbService {
         return val;
     }
     
+    public List<String> getTables() {
+        String sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_TYPE = 'TABLE'";
+        return jdbcTemplate.queryForList(sql, Map.of(), String.class);
+    }
+
+    public void createTable(String tableName, List<Map<String, Object>> columns) {
+        StringBuilder sql = new StringBuilder("CREATE TABLE ").append(tableName).append(" (");
+        List<String> colDefs = new ArrayList<>();
+        
+        // Always add id if not present? Or let user define?
+        // Let's assume user defines columns.
+        for (Map<String, Object> col : columns) {
+            String name = (String) col.get("name");
+            String type = (String) col.get("type");
+            Boolean isPrimaryKey = (Boolean) col.get("primaryKey");
+            Boolean isNullable = (Boolean) col.get("nullable");
+            
+            String def = name + " " + type;
+            if (isPrimaryKey != null && isPrimaryKey) def += " PRIMARY KEY";
+            if (isNullable != null && !isNullable) def += " NOT NULL";
+            colDefs.add(def);
+        }
+        
+        // If no user_id or owner_id, maybe we should add one for ownership?
+        // The prompt says "If the table contains a 'user_id' or 'owner_id' column...".
+        // So we should probably let the user decide.
+        
+        sql.append(String.join(", ", colDefs)).append(")");
+        jdbcTemplate.getJdbcTemplate().execute(sql.toString());
+    }
+
     public void executeRawSql(String sql) {
         jdbcTemplate.getJdbcTemplate().execute(sql);
     }
