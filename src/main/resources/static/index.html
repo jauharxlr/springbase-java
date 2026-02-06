@@ -11,16 +11,24 @@
         body { font-family: 'Inter', sans-serif; }
         .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         .sidebar-item.active { background-color: #f3f4f6; border-right: 4px solid #3b82f6; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen">
 
-    <!-- Auth Overlay (Hidden if logged in) -->
-    <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm hidden">
+    <!-- Auth Overlay (Shown if not logged in) -->
+    <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
-            <div class="flex justify-between mb-8">
-                <button onclick="showAuth('login')" id="btn-login-tab" class="text-xl font-bold border-b-2 border-blue-600 pb-2">Login</button>
-                <button onclick="showAuth('signup')" id="btn-signup-tab" class="text-xl font-bold text-gray-400 pb-2">Sign Up</button>
+            <div class="mb-6 text-center">
+                <h1 class="text-3xl font-bold text-blue-600 flex items-center justify-center">
+                    <i class="fas fa-bolt mr-2"></i> SpringBase
+                </h1>
+                <p class="text-gray-500 mt-2">Sign in to manage your backend</p>
+            </div>
+
+            <div class="flex justify-between mb-8 border-b border-gray-100">
+                <button onclick="showAuth('login')" id="btn-login-tab" class="flex-1 text-lg font-bold border-b-2 border-blue-600 pb-2 transition">Login</button>
+                <button onclick="showAuth('signup')" id="btn-signup-tab" class="flex-1 text-lg font-bold text-gray-400 pb-2 hover:text-gray-600 transition">Sign Up</button>
             </div>
             
             <div id="login-form">
@@ -37,7 +45,7 @@
                         <label class="block text-sm font-medium text-gray-700">Project Reference</label>
                         <input type="text" id="login-project" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="my-awesome-project">
                     </div>
-                    <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition">Sign In</button>
+                    <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition shadow-md">Sign In</button>
                 </div>
             </div>
 
@@ -59,14 +67,21 @@
                         <label class="block text-sm font-medium text-gray-700">Project Reference</label>
                         <input type="text" id="signup-project" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="my-awesome-project">
                     </div>
-                    <button onclick="handleSignup()" class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition">Create Account</button>
+                    <button onclick="handleSignup()" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition shadow-md">Create Account</button>
                 </div>
             </div>
-            <p id="auth-error" class="text-red-500 text-sm mt-4 text-center hidden"></p>
+            <p id="auth-error" class="text-red-500 text-sm mt-4 text-center hidden font-medium"></p>
+            
+            <div class="mt-8 pt-6 border-t border-gray-100 text-center">
+                <a href="/swagger-ui.html" target="_blank" class="text-sm text-gray-400 hover:text-blue-500 transition">
+                    <i class="fas fa-book mr-1"></i> API Documentation
+                </a>
+            </div>
         </div>
     </div>
 
-    <div class="flex h-screen overflow-hidden">
+    <!-- Protected Layout -->
+    <div id="main-layout" class="flex h-screen overflow-hidden hidden">
         <!-- Sidebar -->
         <aside class="w-64 glass border-r border-gray-200 flex flex-col">
             <div class="p-6">
@@ -91,18 +106,15 @@
             </nav>
 
             <div class="p-4 border-t border-gray-200">
-                <div id="user-info" class="flex items-center space-x-3 mb-4 hidden">
+                <div id="user-info" class="flex items-center space-x-3 mb-4">
                     <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold" id="user-avatar">?</div>
                     <div class="flex-1 overflow-hidden">
                         <p class="text-sm font-semibold truncate" id="user-name">User</p>
                         <p class="text-xs text-gray-500 truncate" id="user-email">email@example.com</p>
                     </div>
                 </div>
-                <button onclick="handleLogout()" id="btn-logout" class="w-full flex items-center p-3 text-red-600 rounded-xl hover:bg-red-50 transition hidden">
+                <button onclick="handleLogout()" id="btn-logout" class="w-full flex items-center p-3 text-red-600 rounded-xl hover:bg-red-50 transition">
                     <i class="fas fa-sign-out-alt w-6"></i> Logout
-                </button>
-                <button onclick="openAuth()" id="btn-login-prompt" class="w-full flex items-center p-3 text-blue-600 rounded-xl hover:bg-blue-50 transition">
-                    <i class="fas fa-sign-in-alt w-6"></i> Sign In
                 </button>
             </div>
         </aside>
@@ -281,11 +293,21 @@
 
         // Initial setup
         document.addEventListener('DOMContentLoaded', () => {
-            if (token) {
-                verifySession();
-            }
-            showSection('home');
+            initApp();
         });
+
+        function initApp() {
+            if (token && localStorage.getItem('user')) {
+                document.getElementById('auth-overlay').classList.add('hidden');
+                document.getElementById('main-layout').classList.remove('hidden');
+                verifySession();
+                showSection('home');
+            } else {
+                document.getElementById('auth-overlay').classList.remove('hidden');
+                document.getElementById('main-layout').classList.add('hidden');
+                showAuth('login');
+            }
+        }
 
         function showSection(name) {
             document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
@@ -303,21 +325,19 @@
             document.getElementById('signup-form').classList.toggle('hidden', isLogin);
             
             document.getElementById('btn-login-tab').className = isLogin 
-                ? 'text-xl font-bold border-b-2 border-blue-600 pb-2' 
-                : 'text-xl font-bold text-gray-400 pb-2';
+                ? 'flex-1 text-lg font-bold border-b-2 border-blue-600 pb-2 transition' 
+                : 'flex-1 text-lg font-bold text-gray-400 pb-2 hover:text-gray-600 transition';
             document.getElementById('btn-signup-tab').className = !isLogin 
-                ? 'text-xl font-bold border-b-2 border-blue-600 pb-2' 
-                : 'text-xl font-bold text-gray-400 pb-2';
-        }
-
-        function openAuth() {
-            document.getElementById('auth-overlay').classList.remove('hidden');
+                ? 'flex-1 text-lg font-bold border-b-2 border-blue-600 pb-2 transition' 
+                : 'flex-1 text-lg font-bold text-gray-400 pb-2 hover:text-gray-600 transition';
         }
 
         async function handleLogin() {
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
             const project = document.getElementById('login-project').value;
+
+            if (!email || !password || !project) return showAuthError('All fields are required');
 
             try {
                 const res = await fetch('/auth/v1/login', {
@@ -328,14 +348,14 @@
 
                 if (res.ok) {
                     const data = await res.json();
-                    saveSession(data.accessToken, project, data.user);
-                    location.reload();
+                    saveSession(data.accessToken, project, data.user || { email });
+                    initApp();
                 } else {
                     const error = await res.json();
-                    showAuthError(error.message || 'Login failed');
+                    showAuthError(error.message || 'Login failed. Check your credentials.');
                 }
             } catch (err) {
-                showAuthError('Connection failed');
+                showAuthError('Connection failed. Server might be down.');
             }
         }
 
@@ -344,6 +364,8 @@
             const email = document.getElementById('signup-email').value;
             const password = document.getElementById('signup-password').value;
             const project = document.getElementById('signup-project').value;
+
+            if (!fullName || !email || !password || !project) return showAuthError('All fields are required');
 
             try {
                 const res = await fetch('/auth/v1/signup', {
@@ -354,14 +376,14 @@
 
                 if (res.ok) {
                     const data = await res.json();
-                    saveSession(data.accessToken, project, data.user);
-                    location.reload();
+                    saveSession(data.accessToken, project, data.user || { fullName, email });
+                    initApp();
                 } else {
                     const error = await res.json();
-                    showAuthError(error.message || 'Signup failed');
+                    showAuthError(error.message || 'Signup failed. Email might already exist.');
                 }
             } catch (err) {
-                showAuthError('Connection failed');
+                showAuthError('Connection failed. Server might be down.');
             }
         }
 
@@ -369,23 +391,24 @@
             localStorage.setItem('token', jwt);
             localStorage.setItem('projectRef', pref);
             localStorage.setItem('user', JSON.stringify(user));
+            token = jwt;
+            projectRef = pref;
         }
 
         function handleLogout() {
             localStorage.clear();
+            token = null;
+            projectRef = null;
             location.reload();
         }
 
         function verifySession() {
-            const user = JSON.parse(localStorage.getItem('user'));
-            if (user) {
-                document.getElementById('user-info').classList.remove('hidden');
-                document.getElementById('btn-logout').classList.remove('hidden');
-                document.getElementById('btn-login-prompt').classList.add('hidden');
-                document.getElementById('user-name').textContent = user.fullName || 'User';
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                document.getElementById('user-name').textContent = user.fullName || user.email.split('@')[0];
                 document.getElementById('user-email').textContent = user.email;
-                document.getElementById('user-avatar').textContent = (user.fullName || 'U')[0].toUpperCase();
-                document.getElementById('auth-overlay').classList.add('hidden');
+                document.getElementById('user-avatar').textContent = (user.fullName || user.email)[0].toUpperCase();
             }
         }
 
@@ -393,23 +416,54 @@
             const el = document.getElementById('auth-error');
             el.textContent = msg;
             el.classList.remove('hidden');
+            setTimeout(() => el.classList.add('hidden'), 5000);
+        }
+
+        // Wrapper for fetch to handle 401/403
+        async function apiFetch(url, options = {}) {
+            options.headers = options.headers || {};
+            if (token) {
+                options.headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            try {
+                const res = await fetch(url, options);
+                if (res.status === 401 || res.status === 403) {
+                    handleLogout();
+                    return null;
+                }
+                return res;
+            } catch (err) {
+                console.error('API Error:', err);
+                throw err;
+            }
         }
 
         // Tables Logic
         async function refreshTables() {
             if (!token) return;
             try {
-                const res = await fetch('/rest/v1/tables', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const res = await apiFetch('/rest/v1/tables');
+                if (!res) return;
+                
                 const tables = await res.json();
                 const list = document.getElementById('table-list');
                 list.innerHTML = '';
                 
-                tables.filter(t => !['USERS', 'USER_ROLES', 'ROLES'].includes(t.toUpperCase())).forEach(table => {
+                const userTables = tables.filter(t => !['USERS', 'USER_ROLES', 'ROLES', 'HIBERNATE_SEQUENCES', 'INFORMATION_SCHEMA'].includes(t.toUpperCase()));
+                
+                if (userTables.length === 0) {
+                    list.innerHTML = '<p class="text-sm text-gray-400 italic p-2">No custom tables yet.</p>';
+                    return;
+                }
+
+                userTables.forEach(table => {
                     const btn = document.createElement('button');
-                    btn.className = 'w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-gray-100 transition truncate';
-                    btn.innerHTML = `<i class="fas fa-table mr-2 text-gray-400"></i> ${table}`;
+                    btn.className = 'w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-gray-100 transition truncate flex items-center group';
+                    btn.innerHTML = `
+                        <i class="fas fa-table mr-2 text-gray-400 group-hover:text-blue-500"></i> 
+                        <span class="flex-1">${table}</span>
+                    `;
                     btn.onclick = () => loadTableData(table);
                     list.appendChild(btn);
                 });
@@ -423,9 +477,9 @@
             document.getElementById('table-actions').classList.remove('hidden');
             
             try {
-                const res = await fetch(`/rest/v1/${table}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const res = await apiFetch(`/rest/v1/${table}`);
+                if (!res) return;
+                
                 const data = await res.json();
                 
                 const head = document.getElementById('data-table-head');
@@ -455,7 +509,7 @@
                         body.appendChild(trBody);
                     });
                 } else {
-                    body.innerHTML = '<tr><td class="px-6 py-4 text-center text-gray-400 italic">No data found in this table.</td></tr>';
+                    body.innerHTML = '<tr><td class="px-6 py-8 text-center text-gray-400 italic">No data found in this table.</td></tr>';
                 }
             } catch (err) {
                 console.error(err);
@@ -476,7 +530,7 @@
                     <option value="TIMESTAMP">TIMESTAMP</option>
                     <option value="UUID">UUID</option>
                 </select>
-                <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+                <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-red-500 p-1"><i class="fas fa-times"></i></button>
             `;
             container.appendChild(div);
         }
@@ -498,20 +552,17 @@
             });
 
             try {
-                const res = await fetch('/rest/v1/tables', {
+                const res = await apiFetch('/rest/v1/tables', {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, columns })
                 });
 
-                if (res.ok) {
+                if (res && res.ok) {
                     showToast('Table created successfully!');
                     showSection('tables');
-                } else {
-                    alert('Failed to create table');
+                } else if (res) {
+                    alert('Failed to create table. It might already exist.');
                 }
             } catch (err) {
                 console.error(err);
@@ -521,6 +572,8 @@
         // SQL Logic
         async function runSql() {
             const sql = document.getElementById('sql-editor').value;
+            if (!sql.trim()) return;
+
             const resultContainer = document.getElementById('sql-result-container');
             const messageEl = document.getElementById('sql-message');
             const tableContainer = document.getElementById('sql-table-container');
@@ -530,21 +583,18 @@
             tableContainer.innerHTML = '';
 
             try {
-                const res = await fetch('/admin/v1/sql', {
+                const res = await apiFetch('/admin/v1/sql', {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ sql })
                 });
 
-                if (res.ok) {
+                if (res && res.ok) {
                     messageEl.innerHTML = '<span class="text-green-600 font-bold">Success!</span> Statement executed successfully.';
                     showToast('SQL Executed');
-                } else {
+                } else if (res) {
                     const err = await res.json();
-                    messageEl.innerHTML = `<span class="text-red-600 font-bold">Error:</span> ${err.message}`;
+                    messageEl.innerHTML = `<span class="text-red-600 font-bold">Error:</span> ${err.message || 'Unknown error'}`;
                 }
             } catch (err) {
                 messageEl.textContent = 'Connection error';
@@ -568,26 +618,23 @@
                     const data = JSON.parse(val);
                     insertRow(table, data);
                 } catch(e) {
-                    alert('Invalid JSON');
+                    alert('Invalid JSON format');
                 }
             }
         }
 
         async function insertRow(table, data) {
             try {
-                const res = await fetch(`/rest/v1/${table}`, {
+                const res = await apiFetch(`/rest/v1/${table}`, {
                     method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                if (res.ok) {
+                if (res && res.ok) {
                     showToast('Row added!');
                     loadTableData(table);
-                } else {
-                    alert('Failed to insert row');
+                } else if (res) {
+                    alert('Failed to insert row. Check table schema.');
                 }
             } catch (err) {
                 console.error(err);
