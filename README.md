@@ -5,10 +5,10 @@ SupaSpring is a high-performance, open-source alternative to Supabase, built ent
 ## Project Status
 
 - [x] Project Initialization (Spring Boot 3.5.10, Java 21)
-- [ ] Auth Module (Email/Password, JWT, Multi-tenancy)
-- [ ] Dynamic DB Engine (Auto-CRUD)
-- [ ] Ownership-based Security
-- [ ] AI-First Workflow (SupaShell & JSON-to-DDL)
+- [x] Auth Module (Email/Password, JWT, Multi-tenancy)
+- [x] Dynamic DB Engine (Auto-CRUD)
+- [x] Ownership-based Security
+- [x] AI-First Workflow (SupaShell & JSON-to-DDL)
 
 ## Technical Specifications
 
