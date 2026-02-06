@@ -34,39 +34,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader("Authorization");
         final String apiKeyHeader = request.getHeader("apikey");
 
-        String jwt = null;
         String userId = null;
         String role = null;
         String projectRef = "default";
 
-        // 1. Check for Service Role Key (Admin override)
-        if (serviceRoleKey.equals(apiKeyHeader)) {
-            role = "SERVICE_ROLE";
-            userId = "00000000-0000-0000-0000-000000000000";
-        } 
-        // 2. Check for JWT
-        else if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            jwt = authHeader.substring(7);
-            if (jwtUtils.validateToken(jwt)) {
-                userId = jwtUtils.extractUserId(jwt);
-                role = jwtUtils.extractRole(jwt);
-                projectRef = jwtUtils.extractProjectRef(jwt);
+        try {
+            // 1. Check for Service Role Key (Admin override)
+            if (serviceRoleKey != null && serviceRoleKey.equals(apiKeyHeader)) {
+                role = "SERVICE_ROLE";
+                userId = "00000000-0000-0000-0000-000000000000";
+            } 
+            // 2. Check for JWT
+            else if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String jwt = authHeader.substring(7);
+                if (jwtUtils.validateToken(jwt)) {
+                    userId = jwtUtils.extractUserId(jwt);
+                    role = jwtUtils.extractRole(jwt);
+                    projectRef = jwtUtils.extractProjectRef(jwt);
+                }
             }
-        }
-        // 3. Check for Anon Key
-        else if (anonKey.equals(apiKeyHeader)) {
-            role = "ANON";
-            userId = "anonymous";
-        }
+            // 3. Check for Anon Key
+            else if (anonKey != null && anonKey.equals(apiKeyHeader)) {
+                role = "ANON";
+                userId = "anonymous";
+            }
 
-        if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    userId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase())));
-            
-            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            request.setAttribute("project_ref", projectRef);
-            
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+            if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase())));
+                
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                request.setAttribute("project_ref", projectRef);
+                
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+        } catch (Exception e) {
+            logger.error("Security filter error: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);
