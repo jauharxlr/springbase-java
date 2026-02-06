@@ -3,227 +3,342 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpringBase Dashboard</title>
+    <title>SpringBase Dashboard | Premium Backend Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .sidebar-item.active { background-color: #f3f4f6; border-right: 4px solid #3b82f6; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --brand-indigo: #4f46e5;
+            --brand-emerald: #10b981;
+            --brand-slate: #1e293b;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            letter-spacing: -0.01em;
+        }
+
+        .glass { 
+            background: rgba(255, 255, 255, 0.8); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .sidebar-item {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-item:hover {
+            background-color: #f8fafc;
+            transform: translateX(4px);
+        }
+
+        .sidebar-item.active { 
+            background-color: #eef2ff; 
+            color: #4338ca;
+            border-right: 3px solid #4338ca; 
+        }
+
         .hidden { display: none !important; }
-        .auth-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .auth-card:hover { transform: translateY(-5px); }
-        .fade-in { animation: fadeIn 0.6s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .auth-card { 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        
+        .auth-card:hover { 
+            transform: translateY(-8px); 
+            shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+        }
+
+        .fade-in { 
+            animation: fadeIn 0.4s ease-out; 
+        }
+
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(8px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #cbd5e1;
+        }
+
+        .code-block {
+            background-color: #0f172a;
+            color: #34d399;
+            font-family: 'Fira Code', 'JetBrains Mono', monospace;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            position: relative;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        .code-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.2), transparent);
+        }
+
+        .btn-hover-effect {
+            transition: all 0.2s ease;
+        }
+        .btn-hover-effect:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+        .btn-hover-effect:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 min-h-screen">
+<body class="bg-[#fcfcfd] text-slate-900 min-h-screen">
 
-    <!-- Landing Page (Shown if not logged in) -->
-    <div id="landing-page" class="fixed inset-0 z-50 bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-900 flex flex-col items-center justify-center p-6 overflow-y-auto hidden">
-        <div class="max-w-4xl w-full text-center mb-12 fade-in">
-            <h1 class="text-6xl md:text-8xl font-black text-white mb-6 tracking-tighter">
-                <i class="fas fa-bolt mr-4 text-yellow-400"></i>SpringBase
+    <!-- Landing Page -->
+    <div id="landing-page" class="fixed inset-0 z-50 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 flex flex-col items-center justify-center p-6 overflow-y-auto hidden">
+        <div class="max-w-4xl w-full text-center mb-10 fade-in">
+            <div class="inline-flex items-center px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-400/20 text-indigo-300 text-xs font-bold uppercase tracking-widest mb-6">
+                <span class="flex h-2 w-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span> v1.2.0 Available
+            </div>
+            <h1 class="text-6xl md:text-7xl font-extrabold text-white mb-6 tracking-tighter leading-tight">
+                <i class="fas fa-bolt mr-3 text-emerald-400"></i>SpringBase
             </h1>
-            <p class="text-xl md:text-2xl text-blue-100 font-light max-w-2xl mx-auto">
-                The open-source backend suite for modern applications. 
-                Instant APIs, Authentication, and Realtime capabilities.
+            <p class="text-lg md:text-xl text-slate-300 font-medium max-w-xl mx-auto opacity-80">
+                The high-performance backend suite. 
+                Instant APIs, Auth, and Realtime with premium DX.
             </p>
         </div>
 
-        <div class="flex flex-col md:flex-row gap-8 w-full max-w-5xl fade-in" style="animation-delay: 0.1s;">
+        <div class="flex flex-col md:flex-row gap-6 w-full max-w-4xl fade-in" style="animation-delay: 0.1s;">
             <!-- Login Card -->
-            <div id="login-card" class="auth-card flex-1 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl p-10 border border-white/20">
-                <div class="mb-8">
-                    <h2 class="text-3xl font-extrabold text-gray-900">Welcome Back</h2>
-                    <p class="text-gray-500 mt-2">Log in to manage your data</p>
+            <div id="login-card" class="auth-card flex-1 bg-white/10 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-white/10">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-white">Welcome Back</h2>
+                    <p class="text-slate-400 text-sm mt-1">Access your project dashboard</p>
                 </div>
-                <div class="space-y-5">
+                <div class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Email Address</label>
-                        <input type="email" id="login-email" class="block w-full rounded-2xl border-gray-100 bg-gray-50 shadow-inner focus:border-blue-500 focus:ring-blue-500 p-4 border transition-all" placeholder="alex@example.com">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Email</label>
+                        <input type="email" id="login-email" class="block w-full rounded-xl border-slate-700 bg-slate-800/50 text-white placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 px-4 py-3 border transition-all text-sm" placeholder="alex@springbase.io">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Password</label>
-                        <input type="password" id="login-password" class="block w-full rounded-2xl border-gray-100 bg-gray-50 shadow-inner focus:border-blue-500 focus:ring-blue-500 p-4 border transition-all" placeholder="••••••••">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Password</label>
+                        <input type="password" id="login-password" class="block w-full rounded-xl border-slate-700 bg-slate-800/50 text-white placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 px-4 py-3 border transition-all text-sm" placeholder="••••••••">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Project Reference</label>
-                        <input type="text" id="login-project" class="block w-full rounded-2xl border-gray-100 bg-gray-50 shadow-inner focus:border-blue-500 focus:ring-blue-500 p-4 border transition-all" placeholder="my-awesome-app">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Project ID</label>
+                        <input type="text" id="login-project" class="block w-full rounded-xl border-slate-700 bg-slate-800/50 text-white placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 px-4 py-3 border transition-all text-sm" placeholder="spring-demo-01">
                     </div>
-                    <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition shadow-xl hover:shadow-blue-500/40">
-                        Sign In <i class="fas fa-arrow-right ml-2 text-sm"></i>
+                    <button onclick="handleLogin()" class="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-bold text-sm hover:bg-indigo-500 transition shadow-lg shadow-indigo-600/20 btn-hover-effect mt-2">
+                        Sign In <i class="fas fa-arrow-right ml-2 text-xs"></i>
                     </button>
-                    <p class="text-center text-sm text-gray-500 mt-6">
-                        New here? <a href="#" onclick="toggleAuthMode('signup')" class="text-blue-600 font-bold hover:underline">Create an account</a>
+                    <p class="text-center text-xs text-slate-400 mt-6">
+                        No project yet? <a href="#" onclick="toggleAuthMode('signup')" class="text-emerald-400 font-bold hover:text-emerald-300 transition">Create project</a>
                     </p>
                 </div>
             </div>
 
             <!-- Signup Card -->
-            <div id="signup-card" class="auth-card flex-1 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl p-10 border border-white/20 hidden">
-                <div class="mb-8">
-                    <h2 class="text-3xl font-extrabold text-gray-900">Get Started</h2>
-                    <p class="text-gray-500 mt-2">Create your backend in seconds</p>
+            <div id="signup-card" class="auth-card flex-1 bg-white/10 backdrop-blur-2xl rounded-3xl shadow-2xl p-8 border border-white/10 hidden">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold text-white">Initialize Project</h2>
+                    <p class="text-slate-400 text-sm mt-1">Spin up your backend in seconds</p>
                 </div>
-                <div class="space-y-5">
+                <div class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Full Name</label>
-                        <input type="text" id="signup-name" class="block w-full rounded-2xl border-gray-100 bg-gray-50 shadow-inner focus:border-blue-500 focus:ring-blue-500 p-4 border transition-all" placeholder="Alex Rivers">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Owner Name</label>
+                        <input type="text" id="signup-name" class="block w-full rounded-xl border-slate-700 bg-slate-800/50 text-white placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 px-4 py-3 border transition-all text-sm" placeholder="Alex Rivers">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Email Address</label>
-                        <input type="email" id="signup-email" class="block w-full rounded-2xl border-gray-100 bg-gray-50 shadow-inner focus:border-blue-500 focus:ring-blue-500 p-4 border transition-all" placeholder="alex@example.com">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Work Email</label>
+                        <input type="email" id="signup-email" class="block w-full rounded-xl border-slate-700 bg-slate-800/50 text-white placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 px-4 py-3 border transition-all text-sm" placeholder="alex@company.com">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Password</label>
-                        <input type="password" id="signup-password" class="block w-full rounded-2xl border-gray-100 bg-gray-50 shadow-inner focus:border-blue-500 focus:ring-blue-500 p-4 border transition-all" placeholder="••••••••">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Secure Password</label>
+                        <input type="password" id="signup-password" class="block w-full rounded-xl border-slate-700 bg-slate-800/50 text-white placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 px-4 py-3 border transition-all text-sm" placeholder="••••••••">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Project Reference</label>
-                        <input type="text" id="signup-project" class="block w-full rounded-2xl border-gray-100 bg-gray-50 shadow-inner focus:border-blue-500 focus:ring-blue-500 p-4 border transition-all" placeholder="my-awesome-app">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Project ID</label>
+                        <input type="text" id="signup-project" class="block w-full rounded-xl border-slate-700 bg-slate-800/50 text-white placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 px-4 py-3 border transition-all text-sm" placeholder="my-awesome-api">
                     </div>
-                    <button onclick="handleSignup()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition shadow-xl hover:shadow-indigo-500/40">
-                        Create Project <i class="fas fa-rocket ml-2 text-sm"></i>
+                    <button onclick="handleSignup()" class="w-full bg-emerald-600 text-white py-3.5 rounded-xl font-bold text-sm hover:bg-emerald-500 transition shadow-lg shadow-emerald-600/20 btn-hover-effect mt-2">
+                        Create Project <i class="fas fa-rocket ml-2 text-xs"></i>
                     </button>
-                    <p class="text-center text-sm text-gray-500 mt-6">
-                        Already have an account? <a href="#" onclick="toggleAuthMode('login')" class="text-blue-600 font-bold hover:underline">Sign In</a>
+                    <p class="text-center text-xs text-slate-400 mt-6">
+                        Already have access? <a href="#" onclick="toggleAuthMode('login')" class="text-indigo-400 font-bold hover:text-indigo-300 transition">Sign In</a>
                     </p>
                 </div>
             </div>
         </div>
-        <p id="auth-error" class="text-white bg-red-500/90 px-8 py-3 rounded-full text-sm mt-8 hidden shadow-2xl backdrop-blur-md font-bold"></p>
         
-        <div class="mt-12 text-blue-200 text-sm flex gap-8">
+        <div class="mt-10 text-slate-500 text-xs flex gap-6 items-center">
             <a href="/swagger-ui.html" target="_blank" class="hover:text-white transition flex items-center">
-                <i class="fas fa-book mr-2"></i> API Docs
+                <i class="fas fa-book mr-1.5"></i> API Specs
             </a>
+            <div class="h-1 w-1 rounded-full bg-slate-700"></div>
             <a href="https://github.com/jauharxlr/springbase-java" target="_blank" class="hover:text-white transition flex items-center">
-                <i class="fab fa-github mr-2"></i> GitHub
+                <i class="fab fa-github mr-1.5"></i> GitHub Repository
             </a>
         </div>
+        <p id="auth-error" class="fixed bottom-6 bg-red-500 text-white px-6 py-3 rounded-2xl text-xs font-bold hidden shadow-2xl animate-bounce"></p>
     </div>
 
-    <!-- Protected Layout -->
+    <!-- Main Dashboard Layout -->
     <div id="main-layout" class="flex h-screen overflow-hidden hidden">
         <!-- Sidebar -->
-        <aside class="w-64 glass border-r border-gray-200 flex flex-col">
-            <div class="p-8">
-                <h1 class="text-2xl font-black text-blue-600 flex items-center tracking-tighter">
-                    <i class="fas fa-bolt mr-2 text-yellow-400"></i> SpringBase
+        <aside class="w-60 glass border-r border-slate-200 flex flex-col z-20">
+            <div class="p-6">
+                <h1 class="text-xl font-extrabold text-slate-900 flex items-center tracking-tight">
+                    <span class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center mr-2.5 shadow-indigo-600/20 shadow-lg">
+                        <i class="fas fa-bolt text-emerald-400 text-sm"></i>
+                    </span>
+                    SpringBase
                 </h1>
             </div>
             
-            <nav class="flex-1 px-4 space-y-2 mt-4">
-                <button onclick="showSection('home')" id="nav-home" class="sidebar-item active w-full flex items-center p-4 text-gray-700 rounded-2xl transition font-semibold">
-                    <i class="fas fa-home w-6"></i> Home
+            <nav class="flex-1 px-3 space-y-1 mt-2">
+                <button onclick="showSection('home')" id="nav-home" class="sidebar-item active w-full flex items-center px-4 py-2.5 text-sm text-slate-600 rounded-xl font-semibold">
+                    <i class="fas fa-home w-5 opacity-70"></i> Dashboard
                 </button>
-                <button onclick="showSection('tables')" id="nav-tables" class="sidebar-item w-full flex items-center p-4 text-gray-700 rounded-2xl transition font-semibold">
-                    <i class="fas fa-table w-6"></i> Table Browser
+                <div class="pt-4 pb-1 px-4">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Database</span>
+                </div>
+                <button onclick="showSection('tables')" id="nav-tables" class="sidebar-item w-full flex items-center px-4 py-2.5 text-sm text-slate-600 rounded-xl font-semibold">
+                    <i class="fas fa-table w-5 opacity-70"></i> Table Browser
                 </button>
-                <button onclick="showSection('create')" id="nav-create" class="sidebar-item w-full flex items-center p-4 text-gray-700 rounded-2xl transition font-semibold">
-                    <i class="fas fa-plus-circle w-6"></i> Create Table
+                <button onclick="showSection('create')" id="nav-create" class="sidebar-item w-full flex items-center px-4 py-2.5 text-sm text-slate-600 rounded-xl font-semibold">
+                    <i class="fas fa-plus-circle w-5 opacity-70"></i> Schema Editor
                 </button>
-                <button onclick="showSection('sql')" id="nav-sql" class="sidebar-item w-full flex items-center p-4 text-gray-700 rounded-2xl transition font-semibold">
-                    <i class="fas fa-terminal w-6"></i> SQL Console
+                <button onclick="showSection('sql')" id="nav-sql" class="sidebar-item w-full flex items-center px-4 py-2.5 text-sm text-slate-600 rounded-xl font-semibold">
+                    <i class="fas fa-terminal w-5 opacity-70"></i> SQL Console
                 </button>
-                <button onclick="showSection('docs')" id="nav-docs" class="sidebar-item w-full flex items-center p-4 text-gray-700 rounded-2xl transition font-semibold">
-                    <i class="fas fa-book w-6"></i> SDK Guide
+                <div class="pt-4 pb-1 px-4">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Resources</span>
+                </div>
+                <button onclick="showSection('docs')" id="nav-docs" class="sidebar-item w-full flex items-center px-4 py-2.5 text-sm text-slate-600 rounded-xl font-semibold">
+                    <i class="fas fa-book-open w-5 opacity-70"></i> SDK Guide
                 </button>
             </nav>
 
-            <div class="p-6 border-t border-gray-100 bg-gray-50/50">
-                <div id="user-info" class="flex items-center space-x-3 mb-6">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg" id="user-avatar">?</div>
-                    <div class="flex-1 overflow-hidden">
-                        <p class="text-sm font-bold truncate text-gray-900" id="user-name">User</p>
-                        <p class="text-xs text-gray-500 truncate" id="user-email">email@example.com</p>
+            <div class="p-4 border-t border-slate-100 bg-slate-50/50">
+                <div id="user-info" class="flex items-center space-x-3 mb-4 p-2 rounded-xl bg-white border border-slate-100 shadow-sm">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-slate-800 flex items-center justify-center text-white font-bold text-xs" id="user-avatar">?</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-bold truncate text-slate-900 leading-tight" id="user-name">User</p>
+                        <p class="text-[10px] text-slate-500 truncate" id="user-email">email@example.com</p>
                     </div>
                 </div>
-                <button onclick="handleLogout()" id="btn-logout" class="w-full flex items-center justify-center p-4 text-red-600 rounded-2xl hover:bg-red-50 transition font-bold border border-transparent hover:border-red-100">
-                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                <button onclick="handleLogout()" id="btn-logout" class="w-full flex items-center justify-center py-2.5 text-xs text-slate-400 rounded-xl hover:bg-red-50 hover:text-red-600 transition font-bold group">
+                    <i class="fas fa-sign-out-alt mr-2 group-hover:translate-x-0.5 transition-transform"></i> Sign Out
                 </button>
             </div>
         </aside>
 
-        <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto p-12 relative bg-white">
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-8 relative bg-white">
             
             <!-- Home Section -->
-            <section id="sec-home" class="section space-y-12 fade-in">
-                <div class="max-w-4xl">
-                    <h2 class="text-6xl font-black text-gray-900 mb-8 tracking-tight leading-[1.1]">Welcome to your <br/><span class="text-blue-600">Dynamic Backend</span>.</h2>
-                    <p class="text-2xl text-gray-500 mb-10 leading-relaxed font-light">SpringBase gives you instant REST APIs, Authentication, and Realtime capabilities. Built on Spring Boot with H2/PostgreSQL compatibility.</p>
+            <section id="sec-home" class="section space-y-8 fade-in">
+                <div class="max-w-4xl pt-4">
+                    <h2 class="text-5xl font-extrabold text-slate-900 mb-6 tracking-tight leading-[1.1]">
+                        Architect your <br/><span class="text-indigo-600">Dynamic Backend</span>.
+                    </h2>
+                    <p class="text-lg text-slate-500 mb-8 leading-relaxed font-medium max-w-2xl">
+                        SpringBase delivers instant production-ready REST APIs, secure Auth, and Realtime sync. Optimized for the modern developer.
+                    </p>
                     
-                    <div class="flex flex-wrap gap-4">
-                        <a href="/swagger-ui.html" target="_blank" class="bg-gray-900 text-white px-10 py-5 rounded-[1.5rem] font-bold flex items-center hover:bg-gray-800 transition shadow-2xl hover:scale-105 active:scale-95">
-                            <i class="fas fa-book mr-3"></i> View API Documentation
-                        </a>
-                        <button onclick="showSection('tables')" class="bg-blue-600 text-white px-10 py-5 rounded-[1.5rem] font-bold flex items-center hover:bg-blue-700 transition shadow-2xl hover:scale-105 active:scale-95 shadow-blue-500/20">
-                            <i class="fas fa-rocket mr-3"></i> Explore Tables
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="showSection('tables')" class="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-bold text-sm flex items-center btn-hover-effect shadow-xl shadow-indigo-600/20">
+                            <i class="fas fa-database mr-2.5"></i> Explore Data
                         </button>
+                        <a href="/swagger-ui.html" target="_blank" class="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold text-sm flex items-center btn-hover-effect">
+                            <i class="fas fa-code mr-2.5 text-emerald-400"></i> API Docs
+                        </a>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 transition-all hover:shadow-xl group">
-                        <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 mb-6 text-2xl group-hover:scale-110 transition">
-                            <i class="fas fa-shield-alt"></i>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 transition-all hover:shadow-md group">
+                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600 mb-4 shadow-sm group-hover:scale-110 transition">
+                            <i class="fas fa-shield-halved"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-3">Secure by Default</h3>
-                        <p class="text-gray-500 leading-relaxed">Built-in JWT authentication with automatic row-level ownership security.</p>
+                        <h3 class="text-lg font-bold mb-2">Secure Auth</h3>
+                        <p class="text-slate-500 text-sm leading-relaxed">Built-in JWT with automatic row-level ownership guards.</p>
                     </div>
-                    <div class="bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 transition-all hover:shadow-xl group">
-                        <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 mb-6 text-2xl group-hover:scale-110 transition">
-                            <i class="fas fa-bolt"></i>
+                    <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 transition-all hover:shadow-md group">
+                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-emerald-600 mb-4 shadow-sm group-hover:scale-110 transition">
+                            <i class="fas fa-bolt-lightning"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-3">Instant APIs</h3>
-                        <p class="text-gray-500 leading-relaxed">Create a table and get CRUD REST endpoints immediately at /rest/v1.</p>
+                        <h3 class="text-lg font-bold mb-2">Instant CRUD</h3>
+                        <p class="text-slate-500 text-sm leading-relaxed">Define a schema and get auto-generated REST endpoints.</p>
                     </div>
-                    <div class="bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 transition-all hover:shadow-xl group">
-                        <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center text-green-600 mb-6 text-2xl group-hover:scale-110 transition">
-                            <i class="fas fa-database"></i>
+                    <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 transition-all hover:shadow-md group">
+                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-800 mb-4 shadow-sm group-hover:scale-110 transition">
+                            <i class="fas fa-terminal"></i>
                         </div>
-                        <h3 class="text-2xl font-bold mb-3">SQL Console</h3>
-                        <p class="text-gray-500 leading-relaxed">Run complex queries and migrations directly through the SupaShell editor.</p>
+                        <h3 class="text-lg font-bold mb-2">SQL Console</h3>
+                        <p class="text-slate-500 text-sm leading-relaxed">Direct database access for complex migrations and queries.</p>
                     </div>
                 </div>
             </section>
 
             <!-- Tables Section -->
-            <section id="sec-tables" class="section hidden space-y-8 fade-in">
-                <div class="flex justify-between items-end mb-4">
+            <section id="sec-tables" class="section hidden space-y-6 fade-in">
+                <div class="flex justify-between items-center">
                     <div>
-                        <h2 class="text-4xl font-black tracking-tight">Table Browser</h2>
-                        <p class="text-gray-500 text-lg">Manage your data across different tables.</p>
+                        <h2 class="text-2xl font-extrabold tracking-tight text-slate-900">Table Browser</h2>
+                        <p class="text-slate-500 text-sm">Visualize and manage your project data.</p>
                     </div>
-                    <button onclick="refreshTables()" class="bg-gray-100 p-3 rounded-2xl text-blue-600 hover:bg-blue-50 transition flex items-center font-bold">
-                        <i class="fas fa-sync-alt mr-2"></i> Refresh
+                    <button onclick="refreshTables()" class="bg-white border border-slate-200 px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-50 transition flex items-center text-xs font-bold shadow-sm">
+                        <i class="fas fa-sync-alt mr-2 text-indigo-500"></i> Refresh
                     </button>
                 </div>
 
-                <div class="flex flex-col lg:flex-row gap-8">
-                    <div class="w-full lg:w-72 bg-gray-50 rounded-[2rem] border border-gray-100 p-6 h-fit max-h-[600px] overflow-y-auto">
-                        <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Database Schema</h3>
-                        <div id="table-list" class="space-y-2">
-                            <!-- Tables will be injected here -->
-                            <p class="text-sm text-gray-400 italic">No tables found.</p>
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <!-- Left: Table List -->
+                    <div class="w-full lg:w-60 bg-slate-50 rounded-3xl border border-slate-100 p-4 h-fit max-h-[calc(100vh-200px)] overflow-y-auto">
+                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Schema</h3>
+                        <div id="table-list" class="space-y-1">
+                            <!-- Tables injected here -->
+                            <p class="text-[10px] text-slate-400 italic px-2">Scanning schema...</p>
                         </div>
                     </div>
-                    <div class="flex-1 bg-white rounded-[2rem] border border-gray-100 p-8 min-h-[600px] flex flex-col shadow-sm">
-                        <div id="table-data-header" class="mb-8 flex justify-between items-center">
-                            <h3 id="current-table-name" class="text-2xl font-extrabold text-gray-900">Select a table</h3>
+                    <!-- Right: Table Data -->
+                    <div class="flex-1 bg-white rounded-3xl border border-slate-100 p-6 min-h-[500px] flex flex-col shadow-sm">
+                        <div id="table-data-header" class="mb-6 flex justify-between items-center">
+                            <div class="flex items-center">
+                                <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mr-3 text-xs">
+                                    <i class="fas fa-table"></i>
+                                </span>
+                                <h3 id="current-table-name" class="text-lg font-bold text-slate-900">Select Table</h3>
+                            </div>
                             <div id="table-actions" class="hidden">
-                                <button onclick="openInsertRow()" class="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition hover:scale-105">
-                                    <i class="fas fa-plus mr-2 text-sm"></i> Add Row
+                                <button onclick="openInsertRow()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-500 shadow-md shadow-indigo-600/10 transition btn-hover-effect">
+                                    <i class="fas fa-plus mr-1.5"></i> New Row
                                 </button>
                             </div>
                         </div>
-                        <div class="flex-1 overflow-auto rounded-3xl border border-gray-100 bg-gray-50/30" id="table-container">
-                            <table class="min-w-full divide-y divide-gray-200" id="data-table">
-                                <thead class="bg-gray-100/50" id="data-table-head"></thead>
-                                <tbody class="bg-white divide-y divide-gray-200" id="data-table-body"></tbody>
+                        <div class="flex-1 overflow-auto rounded-2xl border border-slate-100 bg-slate-50/20" id="table-container">
+                            <table class="min-w-full divide-y divide-slate-200" id="data-table">
+                                <thead class="bg-slate-50/80" id="data-table-head"></thead>
+                                <tbody class="bg-white divide-y divide-slate-200" id="data-table-body"></tbody>
                             </table>
                         </div>
                     </div>
@@ -231,177 +346,156 @@
             </section>
 
             <!-- Create Table Section -->
-            <section id="sec-create" class="section hidden space-y-8 fade-in">
+            <section id="sec-create" class="section hidden space-y-6 fade-in">
                 <div>
-                    <h2 class="text-4xl font-black tracking-tight">Create New Table</h2>
-                    <p class="text-gray-500 text-lg">Define your schema and start storing data instantly.</p>
+                    <h2 class="text-2xl font-extrabold tracking-tight text-slate-900">Schema Editor</h2>
+                    <p class="text-slate-500 text-sm">Define new tables and watch your API grow.</p>
                 </div>
 
-                <div class="bg-gray-50 p-10 rounded-[2.5rem] border border-gray-100 max-w-2xl shadow-sm">
-                    <div class="space-y-8">
+                <div class="bg-slate-50 p-8 rounded-3xl border border-slate-100 max-w-2xl shadow-sm">
+                    <div class="space-y-6">
                         <div>
-                            <label class="block text-sm font-black text-gray-400 uppercase tracking-widest mb-3">Table Identity</label>
-                            <input type="text" id="new-table-name" class="block w-full rounded-2xl border-gray-200 bg-white shadow-sm focus:border-blue-500 focus:ring-blue-500 p-4 border transition-all" placeholder="e.g. products">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Table Name</label>
+                            <input type="text" id="new-table-name" class="block w-full rounded-xl border-slate-200 bg-white shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 px-4 py-3 border transition-all text-sm" placeholder="e.g. products">
                         </div>
                         
                         <div>
-                            <div class="flex justify-between items-center mb-4">
-                                <label class="block text-sm font-black text-gray-400 uppercase tracking-widest">Schema Definition</label>
-                                <button onclick="addColumnRow()" class="text-blue-600 text-sm font-black hover:underline">
-                                    <i class="fas fa-plus-circle mr-1"></i> Add Column
+                            <div class="flex justify-between items-center mb-3">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Columns</label>
+                                <button onclick="addColumnRow()" class="text-indigo-600 text-[10px] font-bold hover:underline">
+                                    <i class="fas fa-plus-circle mr-1"></i> Add Field
                                 </button>
                             </div>
-                            <div id="columns-list" class="space-y-4">
+                            <div id="columns-list" class="space-y-3">
                                 <!-- Default columns -->
-                                <div class="flex space-x-3 items-center bg-white p-3 rounded-2xl border border-gray-100 shadow-sm opacity-60">
-                                    <input type="text" value="id" disabled class="bg-transparent w-1/3 p-1 font-bold">
-                                    <div class="bg-gray-100 px-3 py-1 rounded-lg text-xs font-bold text-gray-500">UUID (PK)</div>
+                                <div class="flex space-x-2 items-center bg-white p-3 rounded-xl border border-slate-100 shadow-sm opacity-50">
+                                    <input type="text" value="id" disabled class="bg-transparent w-1/3 px-2 text-xs font-bold">
+                                    <div class="bg-slate-100 px-2 py-1 rounded text-[10px] font-bold text-slate-500">UUID (PK)</div>
                                 </div>
-                                <div class="flex space-x-3 items-center bg-white p-3 rounded-2xl border border-gray-100 shadow-sm opacity-60">
-                                    <input type="text" value="user_id" disabled class="bg-transparent w-1/3 p-1 font-bold">
-                                    <div class="bg-gray-100 px-3 py-1 rounded-lg text-xs font-bold text-gray-500">UUID (OWNER)</div>
+                                <div class="flex space-x-2 items-center bg-white p-3 rounded-xl border border-slate-100 shadow-sm opacity-50">
+                                    <input type="text" value="user_id" disabled class="bg-transparent w-1/3 px-2 text-xs font-bold">
+                                    <div class="bg-slate-100 px-2 py-1 rounded text-[10px] font-bold text-slate-500">UUID (OWNER)</div>
                                 </div>
                             </div>
                         </div>
 
-                        <button onclick="handleCreateTable()" class="w-full bg-blue-600 text-white py-5 rounded-[1.5rem] font-black text-xl hover:bg-blue-700 transition shadow-2xl shadow-blue-500/30 hover:scale-[1.02] active:scale-95">
-                            Generate Backend <i class="fas fa-magic ml-2"></i>
+                        <button onclick="handleCreateTable()" class="w-full bg-slate-900 text-white py-3.5 rounded-2xl font-bold text-sm hover:bg-slate-800 transition shadow-xl btn-hover-effect">
+                            Deploy Schema <i class="fas fa-magic ml-2 text-emerald-400"></i>
                         </button>
                     </div>
                 </div>
             </section>
 
             <!-- SQL Console Section -->
-            <section id="sec-sql" class="section hidden space-y-8 fade-in">
-                <div>
-                    <h2 class="text-4xl font-black tracking-tight">SupaShell SQL Editor</h2>
-                    <p class="text-gray-500 text-lg">Run raw SQL queries directly against your database.</p>
-                </div>
-
-                <div class="bg-gray-900 rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-gray-800">
-                    <div class="bg-gray-800 px-8 py-4 flex justify-between items-center border-b border-gray-700">
-                        <div class="flex space-x-2">
-                            <div class="w-3 h-3 rounded-full bg-red-500 shadow-lg shadow-red-500/50"></div>
-                            <div class="w-3 h-3 rounded-full bg-yellow-500 shadow-lg shadow-yellow-500/50"></div>
-                            <div class="w-3 h-3 rounded-full bg-green-500 shadow-lg shadow-green-500/50"></div>
-                        </div>
-                        <span class="text-xs text-gray-400 font-mono tracking-widest uppercase font-bold">terminal session</span>
-                        <button onclick="runSql()" class="bg-green-600 text-white px-8 py-2 rounded-xl text-sm font-black hover:bg-green-700 transition shadow-lg shadow-green-500/30 hover:scale-105">
-                            EXECUTE <i class="fas fa-play ml-2 text-xs"></i>
-                        </button>
+            <section id="sec-sql" class="section hidden space-y-6 fade-in">
+                <div class="flex justify-between items-end">
+                    <div>
+                        <h2 class="text-2xl font-extrabold tracking-tight text-slate-900">SQL Shell</h2>
+                        <p class="text-slate-500 text-sm">Execute raw queries against the database engine.</p>
                     </div>
-                    <textarea id="sql-editor" class="w-full h-80 bg-gray-900 text-green-400 p-8 font-mono focus:outline-none resize-none text-lg leading-relaxed" placeholder="-- Enter your SQL here&#10;SELECT * FROM users;&#10;-- Use ctrl+enter to run"></textarea>
+                    <button onclick="runSql()" class="bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold hover:bg-emerald-500 transition shadow-lg shadow-emerald-600/20 btn-hover-effect">
+                        <i class="fas fa-play mr-2 text-[10px]"></i> EXECUTE
+                    </button>
                 </div>
 
-                <div id="sql-result-container" class="bg-gray-50 rounded-[2.5rem] border border-gray-100 p-10 hidden shadow-inner">
-                    <h3 class="text-sm font-black text-gray-400 uppercase tracking-[0.3em] mb-6">Execution Output</h3>
-                    <div id="sql-message" class="text-sm font-mono p-4 bg-white rounded-2xl border border-gray-100 shadow-sm"></div>
-                    <div class="overflow-auto max-h-96 mt-6 rounded-2xl border border-gray-100 bg-white" id="sql-table-container"></div>
+                <div class="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-800">
+                    <div class="bg-slate-800/50 px-6 py-3 flex justify-between items-center border-b border-slate-800">
+                        <div class="flex space-x-1.5">
+                            <div class="w-2.5 h-2.5 rounded-full bg-slate-700"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-slate-700"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-slate-700"></div>
+                        </div>
+                        <span class="text-[10px] text-slate-500 font-mono tracking-widest uppercase font-bold">psql — session_01</span>
+                    </div>
+                    <textarea id="sql-editor" class="w-full h-64 bg-slate-900 text-emerald-400 p-6 font-mono focus:outline-none resize-none text-sm leading-relaxed" placeholder="-- Enter SQL query...&#10;SELECT * FROM users LIMIT 10;"></textarea>
+                </div>
+
+                <div id="sql-result-container" class="bg-slate-50 rounded-3xl border border-slate-100 p-6 hidden">
+                    <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Output</h3>
+                    <div id="sql-message" class="text-xs font-mono p-3 bg-white rounded-xl border border-slate-100 shadow-sm"></div>
+                    <div class="overflow-auto max-h-80 mt-4 rounded-xl border border-slate-100 bg-white" id="sql-table-container"></div>
                 </div>
             </section>
 
             <!-- SDK Guide Section -->
-            <section id="sec-docs" class="section hidden space-y-12 fade-in">
-                <div class="max-w-5xl">
-                    <h2 class="text-5xl font-black text-gray-900 mb-6 tracking-tight">SDK & SQL Guide</h2>
-                    <p class="text-xl text-gray-500 mb-10 leading-relaxed font-light">Comprehensive documentation for building on SpringBase. Learn how to query, filter, and secure your data.</p>
-                    
-                    <div class="grid grid-cols-1 gap-12">
-                        <!-- CRUD -->
-                        <div class="bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm">
-                            <h3 class="text-2xl font-bold mb-4 flex items-center">
-                                <span class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mr-4 text-sm"><i class="fas fa-exchange-alt"></i></span>
-                                Basic CRUD (PostgREST style)
-                            </h3>
-                            <p class="text-gray-600 mb-6">SpringBase follows the PostgREST convention for RESTful operations.</p>
-                            <div class="space-y-4">
-                                <div class="bg-gray-50 p-6 rounded-2xl">
-                                    <p class="text-xs font-black text-gray-400 uppercase mb-2 tracking-widest">Read All Rows</p>
-                                    <pre class="bg-gray-900 text-green-400 p-4 rounded-xl font-mono text-sm overflow-x-auto">GET /rest/v1/tasks</pre>
-                                </div>
-                                <div class="bg-gray-50 p-6 rounded-2xl">
-                                    <p class="text-xs font-black text-gray-400 uppercase mb-2 tracking-widest">Create Row</p>
-                                    <pre class="bg-gray-900 text-green-400 p-4 rounded-xl font-mono text-sm overflow-x-auto">POST /rest/v1/tasks
-{ "title": "Finish Documentation", "status": "pending" }</pre>
+            <section id="sec-docs" class="section hidden space-y-8 fade-in">
+                <div class="max-w-4xl">
+                    <h2 class="text-3xl font-extrabold text-slate-900 mb-3 tracking-tight">SDK Documentation</h2>
+                    <p class="text-slate-500 text-sm leading-relaxed font-medium">Integration guides for building applications on SpringBase. Leverage PostgREST-style syntax for rapid development.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Basic Ops -->
+                    <div class="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm flex flex-col">
+                        <div class="flex items-center mb-4">
+                            <span class="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center mr-3 text-xs"><i class="fas fa-bolt"></i></span>
+                            <h3 class="font-bold text-slate-900">Core REST Operations</h3>
+                        </div>
+                        <div class="space-y-4 flex-1">
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Query Rows</p>
+                                <div class="code-block text-xs">GET /rest/v1/tasks</div>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase mb-2 tracking-widest">Insert Record</p>
+                                <div class="code-block text-xs">
+POST /rest/v1/tasks
+{ "title": "Deploy App", "status": "active" }
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Advanced Filtering -->
-                        <div class="bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm">
-                            <h3 class="text-2xl font-bold mb-4 flex items-center">
-                                <span class="w-10 h-10 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center mr-4 text-sm"><i class="fas fa-filter"></i></span>
-                                Advanced Filtering
-                            </h3>
-                            <p class="text-gray-600 mb-6">Use URL parameters to filter your results with powerful operators.</p>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                                    <p class="text-xs font-black text-gray-400 uppercase mb-2">Equals</p>
-                                    <code class="text-blue-600 font-mono">?id=eq.123</code>
-                                </div>
-                                <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                                    <p class="text-xs font-black text-gray-400 uppercase mb-2">Greater Than</p>
-                                    <code class="text-blue-600 font-mono">?age=gt.18</code>
-                                </div>
-                                <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                                    <p class="text-xs font-black text-gray-400 uppercase mb-2">Like (Pattern Matching)</p>
-                                    <code class="text-blue-600 font-mono">?name=like.*John*</code>
-                                </div>
-                                <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                                    <p class="text-xs font-black text-gray-400 uppercase mb-2">In List</p>
-                                    <code class="text-blue-600 font-mono">?status=in.(pending,done)</code>
-                                </div>
+                    <!-- Filtering -->
+                    <div class="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
+                        <div class="flex items-center mb-4">
+                            <span class="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center mr-3 text-xs"><i class="fas fa-filter"></i></span>
+                            <h3 class="font-bold text-slate-900">Advanced Filtering</h3>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Equals</p>
+                                <code class="text-indigo-600 text-[10px] font-mono font-bold">?id=eq.123</code>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Greater Than</p>
+                                <code class="text-indigo-600 text-[10px] font-mono font-bold">?age=gt.21</code>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Pattern</p>
+                                <code class="text-indigo-600 text-[10px] font-mono font-bold">?name=like.*dev*</code>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">List</p>
+                                <code class="text-indigo-600 text-[10px] font-mono font-bold">?tag=in.(a,b)</code>
                             </div>
                         </div>
+                        <p class="text-[10px] text-slate-400 mt-4 italic">Combine multiple filters using the & operator.</p>
+                    </div>
 
-                        <!-- SQL Joins -->
-                        <div class="bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm">
-                            <h3 class="text-2xl font-bold mb-4 flex items-center">
-                                <span class="w-10 h-10 bg-green-100 text-green-600 rounded-xl flex items-center justify-center mr-4 text-sm"><i class="fas fa-link"></i></span>
-                                SQL Joins (Foreign Relations)
-                            </h3>
-                            <p class="text-gray-600 mb-6">Retrieve related data in a single request using the <code class="bg-gray-100 px-2 py-1 rounded">select</code> parameter.</p>
-                            <div class="bg-gray-50 p-6 rounded-2xl">
-                                <p class="text-xs font-black text-gray-400 uppercase mb-2 tracking-widest">Example: Tasks with Project Names</p>
-                                <pre class="bg-gray-900 text-green-400 p-4 rounded-xl font-mono text-sm overflow-x-auto">GET /rest/v1/tasks?select=id,title,projects(name)</pre>
-                                <p class="text-xs text-gray-500 mt-4 italic">Note: Requires a foreign key relationship between tasks and projects.</p>
-                            </div>
+                    <!-- Relations -->
+                    <div class="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
+                        <div class="flex items-center mb-4">
+                            <span class="w-8 h-8 bg-indigo-50 text-indigo-800 rounded-lg flex items-center justify-center mr-3 text-xs"><i class="fas fa-link"></i></span>
+                            <h3 class="font-bold text-slate-900">Relational Joins</h3>
                         </div>
-
-                        <!-- Security -->
-                        <div class="bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm">
-                            <h3 class="text-2xl font-bold mb-4 flex items-center">
-                                <span class="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center mr-4 text-sm"><i class="fas fa-user-shield"></i></span>
-                                Ownership Security
-                            </h3>
-                            <p class="text-gray-600 mb-6">SpringBase automatically secures your data based on user ownership.</p>
-                            <div class="bg-blue-50 p-8 rounded-[2rem] border border-blue-100">
-                                <h4 class="font-bold text-blue-900 mb-2">Automatic Row-Level Security</h4>
-                                <p class="text-blue-800 text-sm leading-relaxed">
-                                    Whenever you create a table, a <code class="bg-blue-200/50 px-1 rounded">user_id</code> column is automatically added. 
-                                    When querying via <code class="bg-blue-200/50 px-1 rounded">/rest/v1/</code>, the system automatically injects a filter:
-                                    <br/><br/>
-                                    <code class="bg-blue-900 text-white px-3 py-1 rounded-lg">WHERE user_id = 'current_user_uuid'</code>
-                                    <br/><br/>
-                                    Users can only see and modify their own data. This is handled transparently by the engine.
-                                </p>
-                            </div>
+                        <div class="code-block text-xs">
+GET /rest/v1/tasks?select=id,title,projects(name)
                         </div>
+                        <p class="text-[10px] text-slate-500 mt-3 leading-relaxed">Fetch related data automatically via foreign key detection.</p>
+                    </div>
 
-                        <!-- Migrations -->
-                        <div class="bg-white rounded-[2.5rem] border border-gray-100 p-8 shadow-sm">
-                            <h3 class="text-2xl font-bold mb-4 flex items-center">
-                                <span class="w-10 h-10 bg-yellow-100 text-yellow-600 rounded-xl flex items-center justify-center mr-4 text-sm"><i class="fas fa-magic"></i></span>
-                                AI-Assisted Migrations
-                            </h3>
-                            <p class="text-gray-600 mb-6">Use the SupaShell SQL Console for intelligent schema management.</p>
-                            <div class="bg-gray-900 p-8 rounded-[2rem] text-gray-300">
-                                <p class="mb-4">Simply describe your schema changes in the SQL Console:</p>
-                                <pre class="text-green-400 font-mono bg-black/30 p-4 rounded-xl mb-4">-- AI Migrations (Conceptual)
--- "Add a 'priority' column to the 'tasks' table"
-ALTER TABLE tasks ADD COLUMN priority VARCHAR(50);</pre>
-                                <p class="text-sm">Combined with AI assistants, you can generate complex DDL by just describing your business requirements.</p>
-                            </div>
+                    <!-- RLS -->
+                    <div class="bg-indigo-900 rounded-3xl p-6 shadow-xl border border-white/10">
+                        <div class="flex items-center mb-4">
+                            <span class="w-8 h-8 bg-indigo-500/20 text-emerald-400 rounded-lg flex items-center justify-center mr-3 text-xs"><i class="fas fa-user-shield"></i></span>
+                            <h3 class="font-bold text-white">Security Guards</h3>
+                        </div>
+                        <p class="text-indigo-200 text-[10px] leading-relaxed mb-4">
+                            Row-Level Security (RLS) is active by default. Every query is filtered by the authenticated <code class="bg-indigo-800 px-1 rounded">user_id</code>.
+                        </p>
+                        <div class="bg-slate-950/50 p-3 rounded-xl border border-white/5 font-mono text-[10px] text-emerald-400">
+                            WHERE user_id = auth.uid()
                         </div>
                     </div>
                 </div>
@@ -410,10 +504,12 @@ ALTER TABLE tasks ADD COLUMN priority VARCHAR(50);</pre>
         </main>
     </div>
 
-    <!-- Toast -->
-    <div id="toast" class="fixed bottom-12 right-12 bg-gray-900 text-white px-8 py-4 rounded-2xl shadow-2xl transition-all transform translate-y-32 opacity-0 flex items-center font-bold z-[100]">
-        <i class="fas fa-check-circle mr-3 text-green-400 text-xl"></i>
-        <span id="toast-message">Action successful</span>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-8 right-8 bg-slate-900 text-white px-6 py-3.5 rounded-2xl shadow-2xl transition-all transform translate-y-32 opacity-0 flex items-center font-bold z-[100] border border-white/10">
+        <div class="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center mr-3">
+            <i class="fas fa-check text-emerald-400 text-xs"></i>
+        </div>
+        <span id="toast-message" class="text-xs">Operation complete</span>
     </div>
 
     <script>
@@ -469,7 +565,7 @@ ALTER TABLE tasks ADD COLUMN priority VARCHAR(50);</pre>
             const password = document.getElementById('login-password').value;
             const project = document.getElementById('login-project').value;
 
-            if (!email || !password || !project) return showAuthError('All fields are required');
+            if (!email || !password || !project) return showAuthError('Credentials required');
 
             try {
                 const res = await fetch('/auth/v1/login', {
@@ -484,10 +580,10 @@ ALTER TABLE tasks ADD COLUMN priority VARCHAR(50);</pre>
                     initApp();
                 } else {
                     const error = await res.json();
-                    showAuthError(error.message || 'Login failed. Check credentials.');
+                    showAuthError(error.message || 'Login failed');
                 }
             } catch (err) {
-                showAuthError('Connection failed. Server might be down.');
+                showAuthError('Engine unreachable');
             }
         }
 
@@ -497,7 +593,7 @@ ALTER TABLE tasks ADD COLUMN priority VARCHAR(50);</pre>
             const password = document.getElementById('signup-password').value;
             const project = document.getElementById('signup-project').value;
 
-            if (!fullName || !email || !password || !project) return showAuthError('All fields are required');
+            if (!fullName || !email || !password || !project) return showAuthError('Missing fields');
 
             try {
                 const res = await fetch('/auth/v1/signup', {
@@ -512,10 +608,10 @@ ALTER TABLE tasks ADD COLUMN priority VARCHAR(50);</pre>
                     initApp();
                 } else {
                     const error = await res.json();
-                    showAuthError(error.message || 'Signup failed. Email might exist.');
+                    showAuthError(error.message || 'Signup failed');
                 }
             } catch (err) {
-                showAuthError('Connection failed. Server might be down.');
+                showAuthError('Engine unreachable');
             }
         }
 
@@ -549,7 +645,7 @@ ALTER TABLE tasks ADD COLUMN priority VARCHAR(50);</pre>
             const el = document.getElementById('auth-error');
             el.textContent = msg;
             el.classList.remove('hidden');
-            setTimeout(() => el.classList.add('hidden'), 5000);
+            setTimeout(() => el.classList.add('hidden'), 4000);
         }
 
         async function apiFetch(url, options = {}) {
@@ -585,16 +681,16 @@ ALTER TABLE tasks ADD COLUMN priority VARCHAR(50);</pre>
                 const userTables = tables.filter(t => !['USERS', 'USER_ROLES', 'ROLES', 'HIBERNATE_SEQUENCES', 'INFORMATION_SCHEMA'].includes(t.toUpperCase()));
                 
                 if (userTables.length === 0) {
-                    list.innerHTML = '<p class="text-sm text-gray-400 italic p-2">No custom tables yet.</p>';
+                    list.innerHTML = '<p class="text-[10px] text-slate-400 italic p-2">No user tables.</p>';
                     return;
                 }
 
                 userTables.forEach(table => {
                     const btn = document.createElement('button');
-                    btn.className = 'w-full text-left px-4 py-3 rounded-2xl text-sm hover:bg-gray-100 transition truncate flex items-center group font-bold text-gray-600';
+                    btn.className = 'w-full text-left px-3 py-2 rounded-xl text-xs hover:bg-slate-100 transition truncate flex items-center group font-bold text-slate-600';
                     btn.innerHTML = `
-                        <i class="fas fa-table mr-3 text-gray-300 group-hover:text-blue-500 transition"></i> 
-                        <span class="flex-1">${table}</span>
+                        <i class="fas fa-table mr-2 text-slate-300 group-hover:text-indigo-500 transition"></i> 
+                        <span class="flex-1 truncate">${table}</span>
                     `;
                     btn.onclick = () => loadTableData(table);
                     list.appendChild(btn);
@@ -624,7 +720,7 @@ ALTER TABLE tasks ADD COLUMN priority VARCHAR(50);</pre>
                     const trHead = document.createElement('tr');
                     columns.forEach(col => {
                         const th = document.createElement('th');
-                        th.className = 'px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]';
+                        th.className = 'px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest';
                         th.textContent = col;
                         trHead.appendChild(th);
                     });
@@ -634,14 +730,14 @@ ALTER TABLE tasks ADD COLUMN priority VARCHAR(50);</pre>
                         const trBody = document.createElement('tr');
                         columns.forEach(col => {
                             const td = document.createElement('td');
-                            td.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium';
+                            td.className = 'px-4 py-2.5 whitespace-nowrap text-xs text-slate-600 font-medium';
                             td.textContent = row[col];
                             trBody.appendChild(td);
                         });
                         body.appendChild(trBody);
                     });
                 } else {
-                    body.innerHTML = '<tr><td class="px-6 py-12 text-center text-gray-400 italic font-medium">No records found in this table.</td></tr>';
+                    body.innerHTML = '<tr><td class="px-4 py-10 text-center text-slate-400 italic text-xs">No records found.</td></tr>';
                 }
             } catch (err) {
                 console.error(err);
@@ -651,17 +747,17 @@ ALTER TABLE tasks ADD COLUMN priority VARCHAR(50);</pre>
         function addColumnRow() {
             const container = document.getElementById('columns-list');
             const div = document.createElement('div');
-            div.className = 'flex space-x-3 items-center bg-white p-3 rounded-2xl border border-gray-100 shadow-sm transition-all hover:border-blue-200';
+            div.className = 'flex space-x-2 items-center bg-white p-2 rounded-xl border border-slate-100 shadow-sm transition-all hover:border-indigo-200';
             div.innerHTML = `
-                <input type="text" placeholder="Column Name" class="col-name w-1/3 rounded-xl border-transparent bg-gray-50 p-2 text-sm font-bold focus:bg-white focus:ring-2 focus:ring-blue-500">
-                <select class="col-type w-1/3 rounded-xl border-transparent bg-gray-50 p-2 text-xs font-bold focus:bg-white focus:ring-2 focus:ring-blue-500">
-                    <option value="VARCHAR(255)">TEXT (String)</option>
-                    <option value="INTEGER">NUMBER (Int)</option>
-                    <option value="BOOLEAN">BOOLEAN (Bit)</option>
-                    <option value="TIMESTAMP">TIMESTAMP (Date)</option>
-                    <option value="UUID">UUID (Id)</option>
+                <input type="text" placeholder="Name" class="col-name w-1/3 rounded-lg border-transparent bg-slate-50 px-2 py-1.5 text-xs font-bold focus:bg-white focus:ring-1 focus:ring-indigo-500">
+                <select class="col-type w-1/3 rounded-lg border-transparent bg-slate-50 px-2 py-1.5 text-[10px] font-bold focus:bg-white focus:ring-1 focus:ring-indigo-500">
+                    <option value="VARCHAR(255)">TEXT</option>
+                    <option value="INTEGER">NUMBER</option>
+                    <option value="BOOLEAN">BOOL</option>
+                    <option value="TIMESTAMP">DATE</option>
+                    <option value="UUID">UUID</option>
                 </select>
-                <button onclick="this.parentElement.remove()" class="text-gray-300 hover:text-red-500 p-2 transition"><i class="fas fa-times"></i></button>
+                <button onclick="this.parentElement.remove()" class="text-slate-300 hover:text-red-500 px-2 transition"><i class="fas fa-times text-[10px]"></i></button>
             `;
             container.appendChild(div);
         }
@@ -690,10 +786,10 @@ ALTER TABLE tasks ADD COLUMN priority VARCHAR(50);</pre>
                 });
 
                 if (res && res.ok) {
-                    showToast('Table deployed to production!');
+                    showToast('Schema deployed successfully');
                     showSection('tables');
                 } else if (res) {
-                    alert('Deployment failed. Check if table name is unique.');
+                    alert('Deployment failed');
                 }
             } catch (err) {
                 console.error(err);
@@ -709,7 +805,7 @@ ALTER TABLE tasks ADD COLUMN priority VARCHAR(50);</pre>
             const tableContainer = document.getElementById('sql-table-container');
 
             resultContainer.classList.remove('hidden');
-            messageEl.textContent = 'Executing query...';
+            messageEl.textContent = 'Executing...';
             tableContainer.innerHTML = '';
 
             try {
@@ -720,14 +816,14 @@ ALTER TABLE tasks ADD COLUMN priority VARCHAR(50);</pre>
                 });
 
                 if (res && res.ok) {
-                    messageEl.innerHTML = '<span class="text-green-600 font-black">QUERY SUCCESSFUL.</span> Effect: rows affected.';
-                    showToast('SQL Execution Complete');
+                    messageEl.innerHTML = '<span class="text-emerald-600 font-bold">SUCCESS</span> Execution finished.';
+                    showToast('SQL script executed');
                 } else if (res) {
                     const err = await res.json();
-                    messageEl.innerHTML = `<span class="text-red-600 font-black">SQL ERROR:</span> ${err.message || 'Syntax error'}`;
+                    messageEl.innerHTML = `<span class="text-red-600 font-bold">ERROR</span> ${err.message || 'Syntax error'}`;
                 }
             } catch (err) {
-                messageEl.textContent = 'Network connectivity error';
+                messageEl.textContent = 'Engine offline';
             }
         }
 
@@ -742,13 +838,13 @@ ALTER TABLE tasks ADD COLUMN priority VARCHAR(50);</pre>
 
         function openInsertRow() {
             const table = document.getElementById('current-table-name').textContent;
-            const val = prompt(`Insert data for ${table} (JSON format):`, '{"name": "example"}');
+            const val = prompt(`Insert data for ${table} (JSON):`, '{"field": "value"}');
             if (val) {
                 try {
                     const data = JSON.parse(val);
                     insertRow(table, data);
                 } catch(e) {
-                    alert('Invalid JSON format');
+                    alert('Invalid JSON');
                 }
             }
         }
@@ -761,10 +857,10 @@ ALTER TABLE tasks ADD COLUMN priority VARCHAR(50);</pre>
                     body: JSON.stringify(data)
                 });
                 if (res && res.ok) {
-                    showToast('Row committed to database');
+                    showToast('Data committed');
                     loadTableData(table);
                 } else if (res) {
-                    alert('Transaction failed. Check data types.');
+                    alert('Failed to commit row');
                 }
             } catch (err) {
                 console.error(err);
