@@ -25,7 +25,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
+            .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(request -> {
                 var corsConfiguration = new org.springframework.web.cors.CorsConfiguration();
                 corsConfiguration.setAllowedOriginPatterns(java.util.List.of("*"));
@@ -35,7 +35,9 @@ public class SecurityConfig {
                 return corsConfiguration;
             }))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/index.html", "/static/**", "/favicon.ico", "/auth/**", "/h2-console/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .requestMatchers("/", "/index.html", "/static/**", "/favicon.ico", "/h2-console/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .requestMatchers("/auth/v1/signup", "/auth/v1/login").permitAll()
+                .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("SERVICE_ROLE")
                 .requestMatchers("/rest/v1/tables").hasAnyRole("AUTHENTICATED", "SERVICE_ROLE")
                 .anyRequest().authenticated()
