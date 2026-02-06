@@ -17,6 +17,15 @@ SupaSpring is a high-performance, open-source alternative to Supabase, built ent
 - **Cache**: Caffeine
 - **Port**: 1890
 
+## Dashboard
+
+- **Web Dashboard**: A no-code-friendly visual interface is available at the root URL: `http://localhost:1890/`.
+  - **Landing Page**: Overview and links to documentation.
+  - **Authentication**: Easy login and signup.
+  - **Table Browser**: View and manage your data visually.
+  - **Table Creator**: Define new tables without writing SQL.
+  - **SQL Console**: Run raw SQL queries via SupaShell.
+
 ## Documentation
 
 - [BRD](BRD_SUPA_SPRING.md)
