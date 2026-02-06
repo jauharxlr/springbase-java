@@ -115,4 +115,25 @@ public class RestApiController {
         dynamicDbService.insert(table, userId, data);
         return ResponseEntity.status(201).build();
     }
+
+    @PatchMapping("/{table}")
+    public ResponseEntity<Void> patch(
+            @PathVariable String table,
+            HttpServletRequest request,
+            @RequestBody Map<String, Object> data) {
+        
+        String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        dynamicDbService.update(table, userId, request.getParameterMap(), data);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{table}")
+    public ResponseEntity<Void> delete(
+            @PathVariable String table,
+            HttpServletRequest request) {
+        
+        String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        dynamicDbService.delete(table, userId, request.getParameterMap());
+        return ResponseEntity.ok().build();
+    }
 }

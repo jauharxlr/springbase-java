@@ -74,11 +74,92 @@ public class DynamicDbService {
         try {
             // In a real app, we would cache this from metadata catalog
             String sql = "SELECT count(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = :t AND COLUMN_NAME = :c";
-            Integer count = jdbcTemplate.queryForObject(sql, Map.of("t", tableName.toUpperCase(), "c", columnName.toUpperCase()), Integer.class);
+            Integer count = jdbcTemplate.queryForObject(sql, Map.of("t", tableName.toLowerCase(), "c", columnName.toLowerCase()), Integer.class);
             return count != null && count > 0;
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public void update(String tableName, String userId, Map<String, String[]> params, Map<String, Object> data) {
+        StringBuilder sql = new StringBuilder("UPDATE ").append(tableName).append(" SET ");
+        Map<String, Object> sqlParams = new HashMap<>();
+        
+        List<String> sets = new ArrayList<>();
+        data.forEach((key, value) -> {
+            sets.add(key + " = :v_" + key);
+            sqlParams.put("v_" + key, value);
+        });
+        sql.append(String.join(", ", sets));
+
+        List<String> conditions = new ArrayList<>();
+        // Ownership injection
+        if (hasColumn(tableName, "user_id")) {
+            conditions.add("user_id = :ownerId");
+            sqlParams.put("ownerId", UUID.fromString(userId));
+        } else if (hasColumn(tableName, "owner_id")) {
+            conditions.add("owner_id = :ownerId");
+            sqlParams.put("ownerId", UUID.fromString(userId));
+        }
+
+        // PostgREST filters
+        params.forEach((key, values) -> {
+            if (!key.equals("select") && !key.equals("order") && !key.equals("limit")) {
+                for (String val : values) {
+                    if (val.contains(".")) {
+                        String[] parts = val.split("\\.", 2);
+                        String op = parts[0];
+                        String actualVal = parts[1];
+                        String sqlOp = getSqlOperator(op);
+                        String paramName = "p_" + key + "_" + System.nanoTime();
+                        conditions.add(key + " " + sqlOp + " :" + paramName);
+                        sqlParams.put(paramName, parseValue(actualVal));
+                    }
+                }
+            }
+        });
+
+        if (!conditions.isEmpty()) {
+            sql.append(" WHERE ").append(String.join(" AND ", conditions));
+        }
+
+        jdbcTemplate.update(sql.toString(), sqlParams);
+    }
+
+    public void delete(String tableName, String userId, Map<String, String[]> params) {
+        StringBuilder sql = new StringBuilder("DELETE FROM ").append(tableName);
+        Map<String, Object> sqlParams = new HashMap<>();
+        
+        List<String> conditions = new ArrayList<>();
+        // Ownership injection
+        if (hasColumn(tableName, "user_id")) {
+            conditions.add("user_id = :ownerId");
+            sqlParams.put("ownerId", UUID.fromString(userId));
+        } else if (hasColumn(tableName, "owner_id")) {
+            conditions.add("owner_id = :ownerId");
+            sqlParams.put("ownerId", UUID.fromString(userId));
+        }
+
+        // PostgREST filters
+        params.forEach((key, values) -> {
+            for (String val : values) {
+                if (val.contains(".")) {
+                    String[] parts = val.split("\\.", 2);
+                    String op = parts[0];
+                    String actualVal = parts[1];
+                    String sqlOp = getSqlOperator(op);
+                    String paramName = "p_" + key + "_" + System.nanoTime();
+                    conditions.add(key + " " + sqlOp + " :" + paramName);
+                    sqlParams.put(paramName, parseValue(actualVal));
+                }
+            }
+        });
+
+        if (!conditions.isEmpty()) {
+            sql.append(" WHERE ").append(String.join(" AND ", conditions));
+        }
+
+        jdbcTemplate.update(sql.toString(), sqlParams);
     }
 
     private String getSqlOperator(String op) {

@@ -21,32 +21,49 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
 
+    @org.springframework.beans.factory.annotation.Value("${springbase.anon-key}")
+    private String anonKey;
+
+    @org.springframework.beans.factory.annotation.Value("${springbase.service-role-key}")
+    private String serviceRoleKey;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         
         final String authHeader = request.getHeader("Authorization");
-        final String apikey = request.getHeader("apikey");
+        final String apiKeyHeader = request.getHeader("apikey");
 
         String jwt = null;
         String userId = null;
+        String role = null;
+        String projectRef = "default";
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        // 1. Check for Service Role Key (Admin override)
+        if (serviceRoleKey.equals(apiKeyHeader)) {
+            role = "SERVICE_ROLE";
+            userId = "00000000-0000-0000-0000-000000000000";
+        } 
+        // 2. Check for JWT
+        else if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
             if (jwtUtils.validateToken(jwt)) {
                 userId = jwtUtils.extractUserId(jwt);
+                role = jwtUtils.extractRole(jwt);
+                projectRef = jwtUtils.extractProjectRef(jwt);
             }
+        }
+        // 3. Check for Anon Key
+        else if (anonKey.equals(apiKeyHeader)) {
+            role = "ANON";
+            userId = "anonymous";
         }
 
         if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            String role = jwtUtils.extractRole(jwt);
-            String projectRef = jwtUtils.extractProjectRef(jwt);
-            
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     userId, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase())));
             
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            // Custom detail for projectRef
             request.setAttribute("project_ref", projectRef);
             
             SecurityContextHolder.getContext().setAuthentication(authToken);
