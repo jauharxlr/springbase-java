@@ -12,71 +12,96 @@
         .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         .sidebar-item.active { background-color: #f3f4f6; border-right: 4px solid #3b82f6; }
         .hidden { display: none !important; }
+        .auth-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .auth-card:hover { transform: translateY(-5px); }
+        .fade-in { animation: fadeIn 0.6s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen">
 
-    <!-- Auth Overlay (Shown if not logged in) -->
-    <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
-            <div class="mb-6 text-center">
-                <h1 class="text-3xl font-bold text-blue-600 flex items-center justify-center">
-                    <i class="fas fa-bolt mr-2"></i> SpringBase
-                </h1>
-                <p class="text-gray-500 mt-2">Sign in to manage your backend</p>
-            </div>
+    <!-- Landing Page (Shown if not logged in) -->
+    <div id="landing-page" class="fixed inset-0 z-50 bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-900 flex flex-col items-center justify-center p-6 overflow-y-auto hidden">
+        <div class="max-w-4xl w-full text-center mb-12 fade-in">
+            <h1 class="text-6xl md:text-8xl font-black text-white mb-6 tracking-tighter">
+                <i class="fas fa-bolt mr-4 text-yellow-400"></i>SpringBase
+            </h1>
+            <p class="text-xl md:text-2xl text-blue-100 font-light max-w-2xl mx-auto">
+                The open-source backend suite for modern applications. 
+                Instant APIs, Authentication, and Realtime capabilities.
+            </p>
+        </div>
 
-            <div class="flex justify-between mb-8 border-b border-gray-100">
-                <button onclick="showAuth('login')" id="btn-login-tab" class="flex-1 text-lg font-bold border-b-2 border-blue-600 pb-2 transition">Login</button>
-                <button onclick="showAuth('signup')" id="btn-signup-tab" class="flex-1 text-lg font-bold text-gray-400 pb-2 hover:text-gray-600 transition">Sign Up</button>
-            </div>
-            
-            <div id="login-form">
-                <div class="space-y-4">
+        <div class="flex flex-col md:flex-row gap-8 w-full max-w-5xl fade-in" style="animation-delay: 0.1s;">
+            <!-- Login Card -->
+            <div id="login-card" class="auth-card flex-1 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl p-10 border border-white/20">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-extrabold text-gray-900">Welcome Back</h2>
+                    <p class="text-gray-500 mt-2">Log in to manage your data</p>
+                </div>
+                <div class="space-y-5">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Email</label>
-                        <input type="email" id="login-email" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="you@example.com">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Email Address</label>
+                        <input type="email" id="login-email" class="block w-full rounded-2xl border-gray-100 bg-gray-50 shadow-inner focus:border-blue-500 focus:ring-blue-500 p-4 border transition-all" placeholder="alex@example.com">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Password</label>
-                        <input type="password" id="login-password" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="••••••••">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Password</label>
+                        <input type="password" id="login-password" class="block w-full rounded-2xl border-gray-100 bg-gray-50 shadow-inner focus:border-blue-500 focus:ring-blue-500 p-4 border transition-all" placeholder="••••••••">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Project Reference</label>
-                        <input type="text" id="login-project" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="my-awesome-project">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Project Reference</label>
+                        <input type="text" id="login-project" class="block w-full rounded-2xl border-gray-100 bg-gray-50 shadow-inner focus:border-blue-500 focus:ring-blue-500 p-4 border transition-all" placeholder="my-awesome-app">
                     </div>
-                    <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition shadow-md">Sign In</button>
+                    <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition shadow-xl hover:shadow-blue-500/40">
+                        Sign In <i class="fas fa-arrow-right ml-2 text-sm"></i>
+                    </button>
+                    <p class="text-center text-sm text-gray-500 mt-6">
+                        New here? <a href="#" onclick="toggleAuthMode('signup')" class="text-blue-600 font-bold hover:underline">Create an account</a>
+                    </p>
                 </div>
             </div>
 
-            <div id="signup-form" class="hidden">
-                <div class="space-y-4">
+            <!-- Signup Card -->
+            <div id="signup-card" class="auth-card flex-1 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-2xl p-10 border border-white/20 hidden">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-extrabold text-gray-900">Get Started</h2>
+                    <p class="text-gray-500 mt-2">Create your backend in seconds</p>
+                </div>
+                <div class="space-y-5">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Full Name</label>
-                        <input type="text" id="signup-name" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="John Doe">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Full Name</label>
+                        <input type="text" id="signup-name" class="block w-full rounded-2xl border-gray-100 bg-gray-50 shadow-inner focus:border-blue-500 focus:ring-blue-500 p-4 border transition-all" placeholder="Alex Rivers">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Email</label>
-                        <input type="email" id="signup-email" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="you@example.com">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Email Address</label>
+                        <input type="email" id="signup-email" class="block w-full rounded-2xl border-gray-100 bg-gray-50 shadow-inner focus:border-blue-500 focus:ring-blue-500 p-4 border transition-all" placeholder="alex@example.com">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Password</label>
-                        <input type="password" id="signup-password" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="••••••••">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Password</label>
+                        <input type="password" id="signup-password" class="block w-full rounded-2xl border-gray-100 bg-gray-50 shadow-inner focus:border-blue-500 focus:ring-blue-500 p-4 border transition-all" placeholder="••••••••">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Project Reference</label>
-                        <input type="text" id="signup-project" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border" placeholder="my-awesome-project">
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Project Reference</label>
+                        <input type="text" id="signup-project" class="block w-full rounded-2xl border-gray-100 bg-gray-50 shadow-inner focus:border-blue-500 focus:ring-blue-500 p-4 border transition-all" placeholder="my-awesome-app">
                     </div>
-                    <button onclick="handleSignup()" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition shadow-md">Create Account</button>
+                    <button onclick="handleSignup()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition shadow-xl hover:shadow-indigo-500/40">
+                        Create Project <i class="fas fa-rocket ml-2 text-sm"></i>
+                    </button>
+                    <p class="text-center text-sm text-gray-500 mt-6">
+                        Already have an account? <a href="#" onclick="toggleAuthMode('login')" class="text-blue-600 font-bold hover:underline">Sign In</a>
+                    </p>
                 </div>
             </div>
-            <p id="auth-error" class="text-red-500 text-sm mt-4 text-center hidden font-medium"></p>
-            
-            <div class="mt-8 pt-6 border-t border-gray-100 text-center">
-                <a href="/swagger-ui.html" target="_blank" class="text-sm text-gray-400 hover:text-blue-500 transition">
-                    <i class="fas fa-book mr-1"></i> API Documentation
-                </a>
-            </div>
+        </div>
+        <p id="auth-error" class="text-white bg-red-500/90 px-8 py-3 rounded-full text-sm mt-8 hidden shadow-2xl backdrop-blur-md font-bold"></p>
+        
+        <div class="mt-12 text-blue-200 text-sm flex gap-8">
+            <a href="/swagger-ui.html" target="_blank" class="hover:text-white transition flex items-center">
+                <i class="fas fa-book mr-2"></i> API Docs
+            </a>
+            <a href="https://github.com/jauharxlr/springbase-java" target="_blank" class="hover:text-white transition flex items-center">
+                <i class="fab fa-github mr-2"></i> GitHub
+            </a>
         </div>
     </div>
 
@@ -84,117 +109,117 @@
     <div id="main-layout" class="flex h-screen overflow-hidden hidden">
         <!-- Sidebar -->
         <aside class="w-64 glass border-r border-gray-200 flex flex-col">
-            <div class="p-6">
-                <h1 class="text-2xl font-bold text-blue-600 flex items-center">
-                    <i class="fas fa-bolt mr-2"></i> SpringBase
+            <div class="p-8">
+                <h1 class="text-2xl font-black text-blue-600 flex items-center tracking-tighter">
+                    <i class="fas fa-bolt mr-2 text-yellow-400"></i> SpringBase
                 </h1>
             </div>
             
             <nav class="flex-1 px-4 space-y-2 mt-4">
-                <button onclick="showSection('home')" id="nav-home" class="sidebar-item active w-full flex items-center p-3 text-gray-700 rounded-xl transition">
+                <button onclick="showSection('home')" id="nav-home" class="sidebar-item active w-full flex items-center p-4 text-gray-700 rounded-2xl transition font-semibold">
                     <i class="fas fa-home w-6"></i> Home
                 </button>
-                <button onclick="showSection('tables')" id="nav-tables" class="sidebar-item w-full flex items-center p-3 text-gray-700 rounded-xl transition">
+                <button onclick="showSection('tables')" id="nav-tables" class="sidebar-item w-full flex items-center p-4 text-gray-700 rounded-2xl transition font-semibold">
                     <i class="fas fa-table w-6"></i> Table Browser
                 </button>
-                <button onclick="showSection('create')" id="nav-create" class="sidebar-item w-full flex items-center p-3 text-gray-700 rounded-xl transition">
+                <button onclick="showSection('create')" id="nav-create" class="sidebar-item w-full flex items-center p-4 text-gray-700 rounded-2xl transition font-semibold">
                     <i class="fas fa-plus-circle w-6"></i> Create Table
                 </button>
-                <button onclick="showSection('sql')" id="nav-sql" class="sidebar-item w-full flex items-center p-3 text-gray-700 rounded-xl transition">
+                <button onclick="showSection('sql')" id="nav-sql" class="sidebar-item w-full flex items-center p-4 text-gray-700 rounded-2xl transition font-semibold">
                     <i class="fas fa-terminal w-6"></i> SQL Console
                 </button>
             </nav>
 
-            <div class="p-4 border-t border-gray-200">
-                <div id="user-info" class="flex items-center space-x-3 mb-4">
-                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold" id="user-avatar">?</div>
+            <div class="p-6 border-t border-gray-100 bg-gray-50/50">
+                <div id="user-info" class="flex items-center space-x-3 mb-6">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg" id="user-avatar">?</div>
                     <div class="flex-1 overflow-hidden">
-                        <p class="text-sm font-semibold truncate" id="user-name">User</p>
+                        <p class="text-sm font-bold truncate text-gray-900" id="user-name">User</p>
                         <p class="text-xs text-gray-500 truncate" id="user-email">email@example.com</p>
                     </div>
                 </div>
-                <button onclick="handleLogout()" id="btn-logout" class="w-full flex items-center p-3 text-red-600 rounded-xl hover:bg-red-50 transition">
-                    <i class="fas fa-sign-out-alt w-6"></i> Logout
+                <button onclick="handleLogout()" id="btn-logout" class="w-full flex items-center justify-center p-4 text-red-600 rounded-2xl hover:bg-red-50 transition font-bold border border-transparent hover:border-red-100">
+                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
                 </button>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto p-8 relative">
+        <main class="flex-1 overflow-y-auto p-12 relative bg-white">
             
             <!-- Home Section -->
-            <section id="sec-home" class="section space-y-12">
+            <section id="sec-home" class="section space-y-12 fade-in">
                 <div class="max-w-4xl">
-                    <h2 class="text-5xl font-extrabold text-gray-900 mb-6">Welcome to your <span class="text-blue-600">Dynamic Backend</span>.</h2>
-                    <p class="text-xl text-gray-600 mb-8 leading-relaxed">SpringBase gives you instant REST APIs, Authentication, and Realtime capabilities. Built on Spring Boot with H2/PostgreSQL compatibility.</p>
+                    <h2 class="text-6xl font-black text-gray-900 mb-8 tracking-tight leading-[1.1]">Welcome to your <br/><span class="text-blue-600">Dynamic Backend</span>.</h2>
+                    <p class="text-2xl text-gray-500 mb-10 leading-relaxed font-light">SpringBase gives you instant REST APIs, Authentication, and Realtime capabilities. Built on Spring Boot with H2/PostgreSQL compatibility.</p>
                     
-                    <div class="flex space-x-4">
-                        <a href="/swagger-ui.html" target="_blank" class="bg-gray-900 text-white px-8 py-4 rounded-2xl font-bold flex items-center hover:bg-gray-800 transition shadow-lg">
+                    <div class="flex flex-wrap gap-4">
+                        <a href="/swagger-ui.html" target="_blank" class="bg-gray-900 text-white px-10 py-5 rounded-[1.5rem] font-bold flex items-center hover:bg-gray-800 transition shadow-2xl hover:scale-105 active:scale-95">
                             <i class="fas fa-book mr-3"></i> View API Documentation
                         </a>
-                        <button onclick="showSection('tables')" class="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center hover:bg-blue-700 transition shadow-lg">
+                        <button onclick="showSection('tables')" class="bg-blue-600 text-white px-10 py-5 rounded-[1.5rem] font-bold flex items-center hover:bg-blue-700 transition shadow-2xl hover:scale-105 active:scale-95 shadow-blue-500/20">
                             <i class="fas fa-rocket mr-3"></i> Explore Tables
                         </button>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                        <div class="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 mb-4 text-xl">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 transition-all hover:shadow-xl group">
+                        <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 mb-6 text-2xl group-hover:scale-110 transition">
                             <i class="fas fa-shield-alt"></i>
                         </div>
-                        <h3 class="text-xl font-bold mb-2">Secure by Default</h3>
-                        <p class="text-gray-500">Built-in JWT authentication with automatic row-level ownership security.</p>
+                        <h3 class="text-2xl font-bold mb-3">Secure by Default</h3>
+                        <p class="text-gray-500 leading-relaxed">Built-in JWT authentication with automatic row-level ownership security.</p>
                     </div>
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                        <div class="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 mb-4 text-xl">
+                    <div class="bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 transition-all hover:shadow-xl group">
+                        <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 mb-6 text-2xl group-hover:scale-110 transition">
                             <i class="fas fa-bolt"></i>
                         </div>
-                        <h3 class="text-xl font-bold mb-2">Instant APIs</h3>
-                        <p class="text-gray-500">Create a table and get CRUD REST endpoints immediately at /rest/v1.</p>
+                        <h3 class="text-2xl font-bold mb-3">Instant APIs</h3>
+                        <p class="text-gray-500 leading-relaxed">Create a table and get CRUD REST endpoints immediately at /rest/v1.</p>
                     </div>
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                        <div class="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-green-600 mb-4 text-xl">
+                    <div class="bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 transition-all hover:shadow-xl group">
+                        <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center text-green-600 mb-6 text-2xl group-hover:scale-110 transition">
                             <i class="fas fa-database"></i>
                         </div>
-                        <h3 class="text-xl font-bold mb-2">SQL Console</h3>
-                        <p class="text-gray-500">Run complex queries and migrations directly through the SupaShell editor.</p>
+                        <h3 class="text-2xl font-bold mb-3">SQL Console</h3>
+                        <p class="text-gray-500 leading-relaxed">Run complex queries and migrations directly through the SupaShell editor.</p>
                     </div>
                 </div>
             </section>
 
             <!-- Tables Section -->
-            <section id="sec-tables" class="section hidden space-y-8">
-                <div class="flex justify-between items-center">
+            <section id="sec-tables" class="section hidden space-y-8 fade-in">
+                <div class="flex justify-between items-end mb-4">
                     <div>
-                        <h2 class="text-3xl font-bold">Table Browser</h2>
-                        <p class="text-gray-500">View and manage your data across different tables.</p>
+                        <h2 class="text-4xl font-black tracking-tight">Table Browser</h2>
+                        <p class="text-gray-500 text-lg">Manage your data across different tables.</p>
                     </div>
-                    <button onclick="refreshTables()" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition">
-                        <i class="fas fa-sync-alt"></i> Refresh
+                    <button onclick="refreshTables()" class="bg-gray-100 p-3 rounded-2xl text-blue-600 hover:bg-blue-50 transition flex items-center font-bold">
+                        <i class="fas fa-sync-alt mr-2"></i> Refresh
                     </button>
                 </div>
 
-                <div class="flex space-x-6">
-                    <div class="w-1/4 bg-white rounded-2xl shadow-sm border border-gray-100 p-4 h-[600px] overflow-y-auto">
-                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Your Tables</h3>
-                        <div id="table-list" class="space-y-1">
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <div class="w-full lg:w-72 bg-gray-50 rounded-[2rem] border border-gray-100 p-6 h-fit max-h-[600px] overflow-y-auto">
+                        <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Database Schema</h3>
+                        <div id="table-list" class="space-y-2">
                             <!-- Tables will be injected here -->
                             <p class="text-sm text-gray-400 italic">No tables found.</p>
                         </div>
                     </div>
-                    <div class="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-[600px] flex flex-col">
-                        <div id="table-data-header" class="mb-4 flex justify-between items-center">
-                            <h3 id="current-table-name" class="text-xl font-bold text-gray-800">Select a table</h3>
+                    <div class="flex-1 bg-white rounded-[2rem] border border-gray-100 p-8 min-h-[600px] flex flex-col shadow-sm">
+                        <div id="table-data-header" class="mb-8 flex justify-between items-center">
+                            <h3 id="current-table-name" class="text-2xl font-extrabold text-gray-900">Select a table</h3>
                             <div id="table-actions" class="hidden">
-                                <button onclick="openInsertRow()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
-                                    Add Row
+                                <button onclick="openInsertRow()" class="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition hover:scale-105">
+                                    <i class="fas fa-plus mr-2 text-sm"></i> Add Row
                                 </button>
                             </div>
                         </div>
-                        <div class="flex-1 overflow-auto rounded-lg border border-gray-100" id="table-container">
+                        <div class="flex-1 overflow-auto rounded-3xl border border-gray-100 bg-gray-50/30" id="table-container">
                             <table class="min-w-full divide-y divide-gray-200" id="data-table">
-                                <thead class="bg-gray-50" id="data-table-head"></thead>
+                                <thead class="bg-gray-100/50" id="data-table-head"></thead>
                                 <tbody class="bg-white divide-y divide-gray-200" id="data-table-body"></tbody>
                             </table>
                         </div>
@@ -203,78 +228,72 @@
             </section>
 
             <!-- Create Table Section -->
-            <section id="sec-create" class="section hidden space-y-8">
+            <section id="sec-create" class="section hidden space-y-8 fade-in">
                 <div>
-                    <h2 class="text-3xl font-bold">Create New Table</h2>
-                    <p class="text-gray-500">Define your schema and start storing data instantly.</p>
+                    <h2 class="text-4xl font-black tracking-tight">Create New Table</h2>
+                    <p class="text-gray-500 text-lg">Define your schema and start storing data instantly.</p>
                 </div>
 
-                <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 max-w-2xl">
-                    <div class="space-y-6">
+                <div class="bg-gray-50 p-10 rounded-[2.5rem] border border-gray-100 max-w-2xl shadow-sm">
+                    <div class="space-y-8">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Table Name</label>
-                            <input type="text" id="new-table-name" class="block w-full rounded-xl border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border" placeholder="e.g. products">
+                            <label class="block text-sm font-black text-gray-400 uppercase tracking-widest mb-3">Table Identity</label>
+                            <input type="text" id="new-table-name" class="block w-full rounded-2xl border-gray-200 bg-white shadow-sm focus:border-blue-500 focus:ring-blue-500 p-4 border transition-all" placeholder="e.g. products">
                         </div>
                         
                         <div>
                             <div class="flex justify-between items-center mb-4">
-                                <label class="block text-sm font-medium text-gray-700">Columns</label>
-                                <button onclick="addColumnRow()" class="text-blue-600 text-sm font-bold hover:underline">
-                                    + Add Column
+                                <label class="block text-sm font-black text-gray-400 uppercase tracking-widest">Schema Definition</label>
+                                <button onclick="addColumnRow()" class="text-blue-600 text-sm font-black hover:underline">
+                                    <i class="fas fa-plus-circle mr-1"></i> Add Column
                                 </button>
                             </div>
-                            <div id="columns-list" class="space-y-3">
-                                <!-- Default ID column -->
-                                <div class="flex space-x-2 items-center">
-                                    <input type="text" value="id" disabled class="bg-gray-50 w-1/3 rounded-lg border-gray-200 p-2 text-sm">
-                                    <select disabled class="bg-gray-50 w-1/3 rounded-lg border-gray-200 p-2 text-sm">
-                                        <option>UUID</option>
-                                    </select>
-                                    <span class="text-xs text-gray-400 font-medium">Primary Key</span>
+                            <div id="columns-list" class="space-y-4">
+                                <!-- Default columns -->
+                                <div class="flex space-x-3 items-center bg-white p-3 rounded-2xl border border-gray-100 shadow-sm opacity-60">
+                                    <input type="text" value="id" disabled class="bg-transparent w-1/3 p-1 font-bold">
+                                    <div class="bg-gray-100 px-3 py-1 rounded-lg text-xs font-bold text-gray-500">UUID (PK)</div>
                                 </div>
-                                <div class="flex space-x-2 items-center">
-                                    <input type="text" value="user_id" disabled class="bg-gray-50 w-1/3 rounded-lg border-gray-200 p-2 text-sm">
-                                    <select disabled class="bg-gray-50 w-1/3 rounded-lg border-gray-200 p-2 text-sm">
-                                        <option>UUID</option>
-                                    </select>
-                                    <span class="text-xs text-gray-400 font-medium">Ownership</span>
+                                <div class="flex space-x-3 items-center bg-white p-3 rounded-2xl border border-gray-100 shadow-sm opacity-60">
+                                    <input type="text" value="user_id" disabled class="bg-transparent w-1/3 p-1 font-bold">
+                                    <div class="bg-gray-100 px-3 py-1 rounded-lg text-xs font-bold text-gray-500">UUID (OWNER)</div>
                                 </div>
                             </div>
                         </div>
 
-                        <button onclick="handleCreateTable()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg">
-                            Create Table
+                        <button onclick="handleCreateTable()" class="w-full bg-blue-600 text-white py-5 rounded-[1.5rem] font-black text-xl hover:bg-blue-700 transition shadow-2xl shadow-blue-500/30 hover:scale-[1.02] active:scale-95">
+                            Generate Backend <i class="fas fa-magic ml-2"></i>
                         </button>
                     </div>
                 </div>
             </section>
 
             <!-- SQL Console Section -->
-            <section id="sec-sql" class="section hidden space-y-8">
+            <section id="sec-sql" class="section hidden space-y-8 fade-in">
                 <div>
-                    <h2 class="text-3xl font-bold">SupaShell SQL Editor</h2>
-                    <p class="text-gray-500">Run raw SQL queries directly against your database.</p>
+                    <h2 class="text-4xl font-black tracking-tight">SupaShell SQL Editor</h2>
+                    <p class="text-gray-500 text-lg">Run raw SQL queries directly against your database.</p>
                 </div>
 
-                <div class="bg-gray-900 rounded-3xl overflow-hidden shadow-2xl">
-                    <div class="bg-gray-800 px-6 py-3 flex justify-between items-center">
+                <div class="bg-gray-900 rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-gray-800">
+                    <div class="bg-gray-800 px-8 py-4 flex justify-between items-center border-b border-gray-700">
                         <div class="flex space-x-2">
-                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-red-500 shadow-lg shadow-red-500/50"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500 shadow-lg shadow-yellow-500/50"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500 shadow-lg shadow-green-500/50"></div>
                         </div>
-                        <span class="text-xs text-gray-400 font-mono">SQL Console</span>
-                        <button onclick="runSql()" class="bg-green-600 text-white px-6 py-1 rounded-lg text-sm font-bold hover:bg-green-700 transition">
-                            Run
+                        <span class="text-xs text-gray-400 font-mono tracking-widest uppercase font-bold">terminal session</span>
+                        <button onclick="runSql()" class="bg-green-600 text-white px-8 py-2 rounded-xl text-sm font-black hover:bg-green-700 transition shadow-lg shadow-green-500/30 hover:scale-105">
+                            EXECUTE <i class="fas fa-play ml-2 text-xs"></i>
                         </button>
                     </div>
-                    <textarea id="sql-editor" class="w-full h-64 bg-gray-900 text-green-400 p-6 font-mono focus:outline-none resize-none" placeholder="-- Enter your SQL here&#10;SELECT * FROM users;"></textarea>
+                    <textarea id="sql-editor" class="w-full h-80 bg-gray-900 text-green-400 p-8 font-mono focus:outline-none resize-none text-lg leading-relaxed" placeholder="-- Enter your SQL here&#10;SELECT * FROM users;&#10;-- Use ctrl+enter to run"></textarea>
                 </div>
 
-                <div id="sql-result-container" class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 hidden">
-                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Execution Results</h3>
-                    <div id="sql-message" class="text-sm"></div>
-                    <div class="overflow-auto max-h-64 mt-4" id="sql-table-container"></div>
+                <div id="sql-result-container" class="bg-gray-50 rounded-[2.5rem] border border-gray-100 p-10 hidden shadow-inner">
+                    <h3 class="text-sm font-black text-gray-400 uppercase tracking-[0.3em] mb-6">Execution Output</h3>
+                    <div id="sql-message" class="text-sm font-mono p-4 bg-white rounded-2xl border border-gray-100 shadow-sm"></div>
+                    <div class="overflow-auto max-h-96 mt-6 rounded-2xl border border-gray-100 bg-white" id="sql-table-container"></div>
                 </div>
             </section>
 
@@ -282,7 +301,8 @@
     </div>
 
     <!-- Toast -->
-    <div id="toast" class="fixed bottom-8 right-8 bg-gray-900 text-white px-6 py-3 rounded-xl shadow-2xl transition-all transform translate-y-24 opacity-0 flex items-center">
+    <div id="toast" class="fixed bottom-12 right-12 bg-gray-900 text-white px-8 py-4 rounded-2xl shadow-2xl transition-all transform translate-y-32 opacity-0 flex items-center font-bold z-[100]">
+        <i class="fas fa-check-circle mr-3 text-green-400 text-xl"></i>
         <span id="toast-message">Action successful</span>
     </div>
 
@@ -294,42 +314,44 @@
         // Initial setup
         document.addEventListener('DOMContentLoaded', () => {
             initApp();
+            
+            // Allow Ctrl+Enter in SQL Editor
+            document.getElementById('sql-editor').addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    runSql();
+                }
+            });
         });
 
         function initApp() {
             if (token && localStorage.getItem('user')) {
-                document.getElementById('auth-overlay').classList.add('hidden');
+                document.getElementById('landing-page').classList.add('hidden');
                 document.getElementById('main-layout').classList.remove('hidden');
                 verifySession();
                 showSection('home');
             } else {
-                document.getElementById('auth-overlay').classList.remove('hidden');
+                document.getElementById('landing-page').classList.remove('hidden');
                 document.getElementById('main-layout').classList.add('hidden');
-                showAuth('login');
+                toggleAuthMode('login');
             }
+        }
+
+        function toggleAuthMode(mode) {
+            const isLogin = mode === 'login';
+            document.getElementById('login-card').classList.toggle('hidden', !isLogin);
+            document.getElementById('signup-card').classList.toggle('hidden', isLogin);
+            document.getElementById('auth-error').classList.add('hidden');
         }
 
         function showSection(name) {
             document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(`sec-${name}`).classList.remove('hidden');
+            const sec = document.getElementById(`sec-${name}`);
+            sec.classList.remove('hidden');
             
             document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
             document.getElementById(`nav-${name}`).classList.add('active');
 
             if (name === 'tables') refreshTables();
-        }
-
-        function showAuth(type) {
-            const isLogin = type === 'login';
-            document.getElementById('login-form').classList.toggle('hidden', !isLogin);
-            document.getElementById('signup-form').classList.toggle('hidden', isLogin);
-            
-            document.getElementById('btn-login-tab').className = isLogin 
-                ? 'flex-1 text-lg font-bold border-b-2 border-blue-600 pb-2 transition' 
-                : 'flex-1 text-lg font-bold text-gray-400 pb-2 hover:text-gray-600 transition';
-            document.getElementById('btn-signup-tab').className = !isLogin 
-                ? 'flex-1 text-lg font-bold border-b-2 border-blue-600 pb-2 transition' 
-                : 'flex-1 text-lg font-bold text-gray-400 pb-2 hover:text-gray-600 transition';
         }
 
         async function handleLogin() {
@@ -352,7 +374,7 @@
                     initApp();
                 } else {
                     const error = await res.json();
-                    showAuthError(error.message || 'Login failed. Check your credentials.');
+                    showAuthError(error.message || 'Login failed. Check credentials.');
                 }
             } catch (err) {
                 showAuthError('Connection failed. Server might be down.');
@@ -380,7 +402,7 @@
                     initApp();
                 } else {
                     const error = await res.json();
-                    showAuthError(error.message || 'Signup failed. Email might already exist.');
+                    showAuthError(error.message || 'Signup failed. Email might exist.');
                 }
             } catch (err) {
                 showAuthError('Connection failed. Server might be down.');
@@ -406,9 +428,10 @@
             const userStr = localStorage.getItem('user');
             if (userStr) {
                 const user = JSON.parse(userStr);
-                document.getElementById('user-name').textContent = user.fullName || user.email.split('@')[0];
+                const name = user.fullName || user.email.split('@')[0];
+                document.getElementById('user-name').textContent = name;
                 document.getElementById('user-email').textContent = user.email;
-                document.getElementById('user-avatar').textContent = (user.fullName || user.email)[0].toUpperCase();
+                document.getElementById('user-avatar').textContent = name[0].toUpperCase();
             }
         }
 
@@ -419,7 +442,6 @@
             setTimeout(() => el.classList.add('hidden'), 5000);
         }
 
-        // Wrapper for fetch to handle 401/403
         async function apiFetch(url, options = {}) {
             options.headers = options.headers || {};
             if (token) {
@@ -459,9 +481,9 @@
 
                 userTables.forEach(table => {
                     const btn = document.createElement('button');
-                    btn.className = 'w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-gray-100 transition truncate flex items-center group';
+                    btn.className = 'w-full text-left px-4 py-3 rounded-2xl text-sm hover:bg-gray-100 transition truncate flex items-center group font-bold text-gray-600';
                     btn.innerHTML = `
-                        <i class="fas fa-table mr-2 text-gray-400 group-hover:text-blue-500"></i> 
+                        <i class="fas fa-table mr-3 text-gray-300 group-hover:text-blue-500 transition"></i> 
                         <span class="flex-1">${table}</span>
                     `;
                     btn.onclick = () => loadTableData(table);
@@ -492,7 +514,7 @@
                     const trHead = document.createElement('tr');
                     columns.forEach(col => {
                         const th = document.createElement('th');
-                        th.className = 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                        th.className = 'px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]';
                         th.textContent = col;
                         trHead.appendChild(th);
                     });
@@ -502,35 +524,34 @@
                         const trBody = document.createElement('tr');
                         columns.forEach(col => {
                             const td = document.createElement('td');
-                            td.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+                            td.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium';
                             td.textContent = row[col];
                             trBody.appendChild(td);
                         });
                         body.appendChild(trBody);
                     });
                 } else {
-                    body.innerHTML = '<tr><td class="px-6 py-8 text-center text-gray-400 italic">No data found in this table.</td></tr>';
+                    body.innerHTML = '<tr><td class="px-6 py-12 text-center text-gray-400 italic font-medium">No records found in this table.</td></tr>';
                 }
             } catch (err) {
                 console.error(err);
             }
         }
 
-        // Create Table Logic
         function addColumnRow() {
             const container = document.getElementById('columns-list');
             const div = document.createElement('div');
-            div.className = 'flex space-x-2 items-center';
+            div.className = 'flex space-x-3 items-center bg-white p-3 rounded-2xl border border-gray-100 shadow-sm transition-all hover:border-blue-200';
             div.innerHTML = `
-                <input type="text" placeholder="Column Name" class="col-name w-1/3 rounded-lg border-gray-300 p-2 text-sm border shadow-sm">
-                <select class="col-type w-1/3 rounded-lg border-gray-300 p-2 text-sm border shadow-sm">
-                    <option value="VARCHAR(255)">TEXT</option>
-                    <option value="INTEGER">NUMBER</option>
-                    <option value="BOOLEAN">BOOLEAN</option>
-                    <option value="TIMESTAMP">TIMESTAMP</option>
-                    <option value="UUID">UUID</option>
+                <input type="text" placeholder="Column Name" class="col-name w-1/3 rounded-xl border-transparent bg-gray-50 p-2 text-sm font-bold focus:bg-white focus:ring-2 focus:ring-blue-500">
+                <select class="col-type w-1/3 rounded-xl border-transparent bg-gray-50 p-2 text-xs font-bold focus:bg-white focus:ring-2 focus:ring-blue-500">
+                    <option value="VARCHAR(255)">TEXT (String)</option>
+                    <option value="INTEGER">NUMBER (Int)</option>
+                    <option value="BOOLEAN">BOOLEAN (Bit)</option>
+                    <option value="TIMESTAMP">TIMESTAMP (Date)</option>
+                    <option value="UUID">UUID (Id)</option>
                 </select>
-                <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-red-500 p-1"><i class="fas fa-times"></i></button>
+                <button onclick="this.parentElement.remove()" class="text-gray-300 hover:text-red-500 p-2 transition"><i class="fas fa-times"></i></button>
             `;
             container.appendChild(div);
         }
@@ -559,17 +580,16 @@
                 });
 
                 if (res && res.ok) {
-                    showToast('Table created successfully!');
+                    showToast('Table deployed to production!');
                     showSection('tables');
                 } else if (res) {
-                    alert('Failed to create table. It might already exist.');
+                    alert('Deployment failed. Check if table name is unique.');
                 }
             } catch (err) {
                 console.error(err);
             }
         }
 
-        // SQL Logic
         async function runSql() {
             const sql = document.getElementById('sql-editor').value;
             if (!sql.trim()) return;
@@ -579,7 +599,7 @@
             const tableContainer = document.getElementById('sql-table-container');
 
             resultContainer.classList.remove('hidden');
-            messageEl.textContent = 'Running...';
+            messageEl.textContent = 'Executing query...';
             tableContainer.innerHTML = '';
 
             try {
@@ -590,23 +610,23 @@
                 });
 
                 if (res && res.ok) {
-                    messageEl.innerHTML = '<span class="text-green-600 font-bold">Success!</span> Statement executed successfully.';
-                    showToast('SQL Executed');
+                    messageEl.innerHTML = '<span class="text-green-600 font-black">QUERY SUCCESSFUL.</span> Effect: rows affected.';
+                    showToast('SQL Execution Complete');
                 } else if (res) {
                     const err = await res.json();
-                    messageEl.innerHTML = `<span class="text-red-600 font-bold">Error:</span> ${err.message || 'Unknown error'}`;
+                    messageEl.innerHTML = `<span class="text-red-600 font-black">SQL ERROR:</span> ${err.message || 'Syntax error'}`;
                 }
             } catch (err) {
-                messageEl.textContent = 'Connection error';
+                messageEl.textContent = 'Network connectivity error';
             }
         }
 
         function showToast(msg) {
             const t = document.getElementById('toast');
             document.getElementById('toast-message').textContent = msg;
-            t.classList.remove('translate-y-24', 'opacity-0');
+            t.classList.remove('translate-y-32', 'opacity-0');
             setTimeout(() => {
-                t.classList.add('translate-y-24', 'opacity-0');
+                t.classList.add('translate-y-32', 'opacity-0');
             }, 3000);
         }
 
@@ -631,10 +651,10 @@
                     body: JSON.stringify(data)
                 });
                 if (res && res.ok) {
-                    showToast('Row added!');
+                    showToast('Row committed to database');
                     loadTableData(table);
                 } else if (res) {
-                    alert('Failed to insert row. Check table schema.');
+                    alert('Transaction failed. Check data types.');
                 }
             } catch (err) {
                 console.error(err);
