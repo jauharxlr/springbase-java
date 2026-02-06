@@ -358,6 +358,17 @@
                             <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Table Name</label>
                             <input type="text" id="new-table-name" class="block w-full rounded-xl border-slate-200 bg-white shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 px-4 py-3 border transition-all text-sm" placeholder="e.g. products">
                         </div>
+
+                        <div class="flex items-center space-x-3 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                            <div class="flex-1">
+                                <h4 class="text-xs font-bold text-slate-900">Make Public (Read-Only)</h4>
+                                <p class="text-[10px] text-slate-500">Allow anonymous access via ANON key without ownership filters.</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="new-table-public" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                        </div>
                         
                         <div>
                             <div class="flex justify-between items-center mb-3">
@@ -489,13 +500,49 @@ GET /rest/v1/tasks?select=id,title,projects(name)
                     <div class="bg-indigo-900 rounded-3xl p-6 shadow-xl border border-white/10">
                         <div class="flex items-center mb-4">
                             <span class="w-8 h-8 bg-indigo-500/20 text-emerald-400 rounded-lg flex items-center justify-center mr-3 text-xs"><i class="fas fa-user-shield"></i></span>
-                            <h3 class="font-bold text-white">Security Guards</h3>
+                            <h3 class="font-bold text-white">Smart-Policy Guards</h3>
                         </div>
                         <p class="text-indigo-200 text-[10px] leading-relaxed mb-4">
-                            Row-Level Security (RLS) is active by default. Every query is filtered by the authenticated <code class="bg-indigo-800 px-1 rounded">user_id</code>.
+                            Row-Level Security (RLS) is active by default. Every query is filtered by the authenticated <code class="bg-indigo-800 px-1 rounded">user_id</code>. 
+                            Advanced scenarios support sharing and public access.
                         </p>
-                        <div class="bg-slate-950/50 p-3 rounded-xl border border-white/5 font-mono text-[10px] text-emerald-400">
-                            WHERE user_id = auth.uid()
+                        <div class="bg-slate-950/50 p-3 rounded-xl border border-white/5 font-mono text-[10px] text-emerald-400 space-y-2">
+                            <div>-- Default Ownership</div>
+                            <div>WHERE user_id = auth.uid()</div>
+                            <div class="mt-2 text-indigo-400">-- Multi-Party / CRM Patterns</div>
+                            <div>WHERE user_id = auth.uid() OR shared_with_id = auth.uid() OR merchant_id = auth.uid()</div>
+                        </div>
+                    </div>
+
+                    <!-- Marketplace Pattern -->
+                    <div class="bg-slate-50 rounded-3xl p-6 border border-slate-200 col-span-1 lg:col-span-2">
+                        <div class="flex items-center mb-4">
+                            <span class="w-8 h-8 bg-white text-indigo-600 rounded-lg flex items-center justify-center mr-3 text-xs shadow-sm"><i class="fas fa-store"></i></span>
+                            <h3 class="font-bold text-slate-900 text-sm">Customer-Merchant Scenario</h3>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="text-xs text-slate-600 space-y-2">
+                                <p>To build a Marketplace or CRM where both a customer and a merchant can see a record, use special column names:</p>
+                                <ul class="list-disc ml-4 space-y-1">
+                                    <li><code class="font-bold text-indigo-600">user_id</code>: The primary owner (e.g., the Customer)</li>
+                                    <li><code class="font-bold text-indigo-600">merchant_id</code>: The service provider</li>
+                                    <li><code class="font-bold text-indigo-600">shared_with_id</code>: An additional collaborator</li>
+                                </ul>
+                                <p class="pt-2">SpringBase automatically grants read/write access if the <code class="bg-slate-200 px-1 rounded">auth.uid()</code> matches <strong>ANY</strong> of these columns.</p>
+                            </div>
+                            <div class="code-block text-[10px]">
+-- Example: 'orders' table structure
+CREATE TABLE orders (
+  id UUID PRIMARY KEY,
+  user_id UUID, -- Customer
+  merchant_id UUID, -- Seller
+  total DECIMAL,
+  status TEXT
+);
+
+-- Both Customer and Seller can now access:
+GET /rest/v1/orders
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -685,14 +732,18 @@ GET /rest/v1/tasks?select=id,title,projects(name)
                     return;
                 }
 
-                userTables.forEach(table => {
+                userTables.forEach(tableMeta => {
+                    const tableName = typeof tableMeta === 'string' ? tableMeta : tableMeta.name;
+                    const isPublic = tableMeta.is_public;
+                    
                     const btn = document.createElement('button');
                     btn.className = 'w-full text-left px-3 py-2 rounded-xl text-xs hover:bg-slate-100 transition truncate flex items-center group font-bold text-slate-600';
                     btn.innerHTML = `
                         <i class="fas fa-table mr-2 text-slate-300 group-hover:text-indigo-500 transition"></i> 
-                        <span class="flex-1 truncate">${table}</span>
+                        <span class="flex-1 truncate">${tableName}</span>
+                        ${isPublic ? '<span class="ml-1 text-[8px] bg-emerald-100 text-emerald-600 px-1 rounded">PUBLIC</span>' : ''}
                     `;
-                    btn.onclick = () => loadTableData(table);
+                    btn.onclick = () => loadTableData(tableName);
                     list.appendChild(btn);
                 });
             } catch (err) {
@@ -764,6 +815,7 @@ GET /rest/v1/tasks?select=id,title,projects(name)
 
         async function handleCreateTable() {
             const name = document.getElementById('new-table-name').value;
+            const isPublic = document.getElementById('new-table-public').checked;
             if (!name) return alert('Enter table name');
 
             const columns = [
@@ -782,7 +834,7 @@ GET /rest/v1/tasks?select=id,title,projects(name)
                 const res = await apiFetch('/rest/v1/tables', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, columns })
+                    body: JSON.stringify({ name, columns, isPublic })
                 });
 
                 if (res && res.ok) {

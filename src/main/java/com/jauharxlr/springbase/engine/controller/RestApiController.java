@@ -31,13 +31,15 @@ public class RestApiController {
     private final DynamicDbService dynamicDbService;
 
     @GetMapping("/tables")
-    public ResponseEntity<List<String>> listTables() {
-        return ResponseEntity.ok(dynamicDbService.getTables());
+    public ResponseEntity<List<Map<String, Object>>> listTables(HttpServletRequest request) {
+        String projectRef = (String) request.getAttribute("project_ref");
+        return ResponseEntity.ok(dynamicDbService.getTablesMetadata(projectRef));
     }
 
     @PostMapping("/tables")
-    public ResponseEntity<Void> createTable(@RequestBody TableRequest request) {
-        dynamicDbService.createTable(request.getName(), request.getColumns());
+    public ResponseEntity<Void> createTable(@RequestBody TableRequest request, HttpServletRequest httpRequest) {
+        String projectRef = (String) httpRequest.getAttribute("project_ref");
+        dynamicDbService.createTable(request.getName(), projectRef, request.getColumns(), request.isPublic());
         return ResponseEntity.status(201).build();
     }
 
@@ -45,6 +47,7 @@ public class RestApiController {
     public static class TableRequest {
         private String name;
         private List<Map<String, Object>> columns;
+        private boolean isPublic;
     }
 
     @Operation(

@@ -1,5 +1,7 @@
 package com.jauharxlr.springbase.engine.service;
 
+import com.jauharxlr.springbase.engine.entity.TableMetadata;
+import com.jauharxlr.springbase.engine.repository.TableMetadataRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -14,6 +16,7 @@ import java.util.stream.Collectors;
 public class DynamicDbService {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final TableMetadataRepository tableMetadataRepository;
 
     public List<Map<String, Object>> select(String tableName, String projectRef, String userId, Map<String, String[]> params) {
         StringBuilder sql = new StringBuilder("SELECT * FROM ").append(tableName);
@@ -21,13 +24,39 @@ public class DynamicDbService {
         
         List<String> conditions = new ArrayList<>();
         
-        // Ownership injection
-        if (hasColumn(tableName, "user_id")) {
-            conditions.add("user_id = :ownerId");
-            sqlParams.put("ownerId", UUID.fromString(userId));
-        } else if (hasColumn(tableName, "owner_id")) {
-            conditions.add("owner_id = :ownerId");
-            sqlParams.put("ownerId", UUID.fromString(userId));
+        // Smart-Policy Logic
+        boolean isPublic = isTablePublic(tableName, projectRef);
+        boolean isAnon = "anonymous".equals(userId);
+
+        if (!(isPublic && isAnon)) {
+            List<String> policyClauses = new ArrayList<>();
+            
+            if (userId != null && !isAnon) {
+                try {
+                    UUID authUid = UUID.fromString(userId);
+                    sqlParams.put("auth_uid", authUid);
+
+                    if (hasColumn(tableName, "user_id")) policyClauses.add("user_id = :auth_uid");
+                    if (hasColumn(tableName, "owner_id")) policyClauses.add("owner_id = :auth_uid");
+                    if (hasColumn(tableName, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
+                    if (hasColumn(tableName, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid UUID for userId: {}", userId);
+                }
+            }
+
+            if (!policyClauses.isEmpty()) {
+                conditions.add("(" + String.join(" OR ", policyClauses) + ")");
+            } else if (isAnon && !isPublic) {
+                conditions.add("1=0"); // Restricted access
+            } else if (!isAnon && !hasAnySecurityColumn(tableName)) {
+                // If no security columns exist, we allow access (or maybe we should restrict?)
+                // Default behavior for tables without user_id was full access in previous version.
+            } else if (!isAnon) {
+                // User is logged in, security columns exist, but none matched? 
+                // The OR logic above handles this if policyClauses is not empty.
+                // If policyClauses IS empty but security columns exist, it means userId was null/invalid.
+            }
         }
 
         // PostgREST filters
@@ -55,12 +84,28 @@ public class DynamicDbService {
         return jdbcTemplate.queryForList(sql.toString(), sqlParams);
     }
 
+    private boolean isTablePublic(String tableName, String projectRef) {
+        return tableMetadataRepository.findByTableNameAndProjectRef(tableName.toLowerCase(), projectRef)
+                .map(TableMetadata::isPublicRead)
+                .orElse(false);
+    }
+
+    private boolean hasAnySecurityColumn(String tableName) {
+        return hasColumn(tableName, "user_id") || 
+               hasColumn(tableName, "owner_id") || 
+               hasColumn(tableName, "shared_with_id") || 
+               hasColumn(tableName, "merchant_id");
+    }
+
     public void insert(String tableName, String userId, Map<String, Object> data) {
         // Ownership injection for insert
-        if (hasColumn(tableName, "user_id")) {
-            data.put("user_id", UUID.fromString(userId));
-        } else if (hasColumn(tableName, "owner_id")) {
-            data.put("owner_id", UUID.fromString(userId));
+        if (userId != null && !"anonymous".equals(userId)) {
+            UUID authUid = UUID.fromString(userId);
+            if (hasColumn(tableName, "user_id")) {
+                data.put("user_id", authUid);
+            } else if (hasColumn(tableName, "owner_id")) {
+                data.put("owner_id", authUid);
+            }
         }
 
         String columns = String.join(", ", data.keySet());
@@ -72,7 +117,6 @@ public class DynamicDbService {
 
     private boolean hasColumn(String tableName, String columnName) {
         try {
-            // In a real app, we would cache this from metadata catalog
             String sql = "SELECT count(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = :t AND COLUMN_NAME = :c";
             Integer count = jdbcTemplate.queryForObject(sql, Map.of("t", tableName.toLowerCase(), "c", columnName.toLowerCase()), Integer.class);
             return count != null && count > 0;
@@ -93,13 +137,23 @@ public class DynamicDbService {
         sql.append(String.join(", ", sets));
 
         List<String> conditions = new ArrayList<>();
-        // Ownership injection
-        if (hasColumn(tableName, "user_id")) {
-            conditions.add("user_id = :ownerId");
-            sqlParams.put("ownerId", UUID.fromString(userId));
-        } else if (hasColumn(tableName, "owner_id")) {
-            conditions.add("owner_id = :ownerId");
-            sqlParams.put("ownerId", UUID.fromString(userId));
+        // Policy logic for update (same as select but usually more restrictive, 
+        // here we use the same Smart-Policy logic)
+        if (userId != null && !"anonymous".equals(userId)) {
+            UUID authUid = UUID.fromString(userId);
+            sqlParams.put("auth_uid", authUid);
+            
+            List<String> policyClauses = new ArrayList<>();
+            if (hasColumn(tableName, "user_id")) policyClauses.add("user_id = :auth_uid");
+            if (hasColumn(tableName, "owner_id")) policyClauses.add("owner_id = :auth_uid");
+            if (hasColumn(tableName, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
+            if (hasColumn(tableName, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
+            
+            if (!policyClauses.isEmpty()) {
+                conditions.add("(" + String.join(" OR ", policyClauses) + ")");
+            }
+        } else {
+            conditions.add("1=0"); // Anon cannot update
         }
 
         // PostgREST filters
@@ -131,13 +185,22 @@ public class DynamicDbService {
         Map<String, Object> sqlParams = new HashMap<>();
         
         List<String> conditions = new ArrayList<>();
-        // Ownership injection
-        if (hasColumn(tableName, "user_id")) {
-            conditions.add("user_id = :ownerId");
-            sqlParams.put("ownerId", UUID.fromString(userId));
-        } else if (hasColumn(tableName, "owner_id")) {
-            conditions.add("owner_id = :ownerId");
-            sqlParams.put("ownerId", UUID.fromString(userId));
+        // Policy logic for delete
+        if (userId != null && !"anonymous".equals(userId)) {
+            UUID authUid = UUID.fromString(userId);
+            sqlParams.put("auth_uid", authUid);
+            
+            List<String> policyClauses = new ArrayList<>();
+            if (hasColumn(tableName, "user_id")) policyClauses.add("user_id = :auth_uid");
+            if (hasColumn(tableName, "owner_id")) policyClauses.add("owner_id = :auth_uid");
+            if (hasColumn(tableName, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
+            if (hasColumn(tableName, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
+            
+            if (!policyClauses.isEmpty()) {
+                conditions.add("(" + String.join(" OR ", policyClauses) + ")");
+            }
+        } else {
+            conditions.add("1=0"); // Anon cannot delete
         }
 
         // PostgREST filters
@@ -177,7 +240,6 @@ public class DynamicDbService {
     }
 
     private Object parseValue(String val) {
-        // Simple parser for numbers, booleans, or UUIDs
         if (val.equalsIgnoreCase("true")) return true;
         if (val.equalsIgnoreCase("false")) return false;
         try { return Long.parseLong(val); } catch (NumberFormatException e) {}
@@ -191,12 +253,23 @@ public class DynamicDbService {
         return jdbcTemplate.queryForList(sql, Map.of(), String.class);
     }
 
-    public void createTable(String tableName, List<Map<String, Object>> columns) {
+    public List<Map<String, Object>> getTablesMetadata(String projectRef) {
+        List<String> tableNames = getTables();
+        List<Map<String, Object>> result = new ArrayList<>();
+        
+        for (String name : tableNames) {
+            Map<String, Object> meta = new HashMap<>();
+            meta.put("name", name);
+            meta.put("is_public", isTablePublic(name, projectRef));
+            result.add(meta);
+        }
+        return result;
+    }
+
+    public void createTable(String tableName, String projectRef, List<Map<String, Object>> columns, boolean isPublic) {
         StringBuilder sql = new StringBuilder("CREATE TABLE ").append(tableName).append(" (");
         List<String> colDefs = new ArrayList<>();
         
-        // Always add id if not present? Or let user define?
-        // Let's assume user defines columns.
         for (Map<String, Object> col : columns) {
             String name = (String) col.get("name");
             String type = (String) col.get("type");
@@ -209,12 +282,16 @@ public class DynamicDbService {
             colDefs.add(def);
         }
         
-        // If no user_id or owner_id, maybe we should add one for ownership?
-        // The prompt says "If the table contains a 'user_id' or 'owner_id' column...".
-        // So we should probably let the user decide.
-        
         sql.append(String.join(", ", colDefs)).append(")");
         jdbcTemplate.getJdbcTemplate().execute(sql.toString());
+
+        // Save metadata
+        TableMetadata metadata = TableMetadata.builder()
+                .tableName(tableName.toLowerCase())
+                .projectRef(projectRef)
+                .isPublicRead(isPublic)
+                .build();
+        tableMetadataRepository.save(metadata);
     }
 
     public void executeRawSql(String sql) {
