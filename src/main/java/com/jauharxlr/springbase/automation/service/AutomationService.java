@@ -18,14 +18,25 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class AutomationService {
 
     private final AutomationRuleRepository automationRuleRepository;
     private final ActionService actionService;
     private final ObjectMapper objectMapper;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+
+    public AutomationService(AutomationRuleRepository automationRuleRepository, ActionService actionService, ObjectMapper objectMapper) {
+        this.automationRuleRepository = automationRuleRepository;
+        this.actionService = actionService;
+        this.objectMapper = objectMapper;
+        
+        // Configure RestTemplate with timeouts
+        org.springframework.http.client.SimpleClientHttpRequestFactory factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(5000); // 5s
+        factory.setReadTimeout(5000);    // 5s
+        this.restTemplate = new RestTemplate(factory);
+    }
 
     @Async
     @EventListener
