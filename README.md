@@ -37,6 +37,8 @@ SpringBase features a built-in **Smart-Policy** engine that automatically applie
 - `merchant_id`: The service provider or merchant associated with the record.
 - `client_id`: The client or customer associated with the record.
 - `shared_with_id`: An additional collaborator who has access.
+- `company_id`: The organization or company the record belongs to.
+- `tenant_id`: The tenant or workspace the record belongs to.
 
 The engine uses an `OR` logic: `WHERE user_id = :uid OR owner_id = :uid OR ...`. 
 General ID columns like `product_id` or `category_id` are **ignored** by the security engine to prevent false-positive filters.

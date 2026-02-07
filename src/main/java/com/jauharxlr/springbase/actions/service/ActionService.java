@@ -141,8 +141,12 @@ public class ActionService {
 
     private boolean hasColumn(String tableName, String columnName) {
         try {
-            String sql = "SELECT count(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = :t AND COLUMN_NAME = :c";
-            Integer count = jdbcTemplate.queryForObject(sql, Map.of("t", tableName.toLowerCase(), "c", columnName.toLowerCase()), Integer.class);
+            String sql = "SELECT count(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = UPPER(:t) AND COLUMN_NAME = UPPER(:c)";
+            Integer count = jdbcTemplate.queryForObject(sql, Map.of("t", tableName, "c", columnName), Integer.class);
+            if (count != null && count > 0) return true;
+            
+            sql = "SELECT count(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = LOWER(:t) AND COLUMN_NAME = LOWER(:c)";
+            count = jdbcTemplate.queryForObject(sql, Map.of("t", tableName, "c", columnName), Integer.class);
             return count != null && count > 0;
         } catch (Exception e) {
             return false;
