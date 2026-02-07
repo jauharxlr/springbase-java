@@ -860,8 +860,9 @@ GET /rest/v1/orders
 
             document.querySelectorAll('.col-name').forEach((input, i) => {
                 const type = document.querySelectorAll('.col-type')[i].value;
+                const isStakeholder = document.querySelectorAll('.col-stakeholder')[i].checked;
                 if (input.value) {
-                    columns.push({ name: input.value, type: type, primaryKey: false, nullable: true });
+                    columns.push({ name: input.value, type: type, primaryKey: false, nullable: true, stakeholder: isStakeholder });
                 }
             });
 
