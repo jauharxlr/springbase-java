@@ -37,6 +37,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/index.html", "/static/**", "/favicon.ico", "/h2-console/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/error").permitAll()
                 .requestMatchers("/auth/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/storage/v1/object/**").permitAll()
+                .requestMatchers("/storage/v1/**").hasAnyRole("AUTHENTICATED", "SERVICE_ROLE")
                 .requestMatchers("/admin/**").hasRole("SERVICE_ROLE")
                 .requestMatchers("/rest/v1/tables").hasAnyRole("AUTHENTICATED", "SERVICE_ROLE")
                 .anyRequest().authenticated()

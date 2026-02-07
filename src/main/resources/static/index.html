@@ -229,6 +229,9 @@
                 <button onclick="showSection('sql')" id="nav-sql" class="sidebar-item w-full flex items-center px-4 py-2.5 text-sm text-slate-600 rounded-xl font-semibold">
                     <i class="fas fa-terminal w-5 opacity-70"></i> SQL Console
                 </button>
+                <button onclick="showSection('storage')" id="nav-storage" class="sidebar-item w-full flex items-center px-4 py-2.5 text-sm text-slate-600 rounded-xl font-semibold">
+                    <i class="fas fa-box w-5 opacity-70"></i> Storage
+                </button>
                 <div class="pt-4 pb-1 px-4">
                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Resources</span>
                 </div>
@@ -425,6 +428,71 @@
                     <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Output</h3>
                     <div id="sql-message" class="text-xs font-mono p-3 bg-white rounded-xl border border-slate-100 shadow-sm"></div>
                     <div class="overflow-auto max-h-80 mt-4 rounded-xl border border-slate-100 bg-white" id="sql-table-container"></div>
+                </div>
+            </section>
+
+            <!-- Storage Section -->
+            <section id="sec-storage" class="section hidden space-y-6 fade-in">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-extrabold tracking-tight text-slate-900">Object Storage</h2>
+                        <p class="text-slate-500 text-sm">Manage buckets and files with project isolation.</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="openCreateBucket()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-500 shadow-md shadow-indigo-600/10 transition btn-hover-effect">
+                            <i class="fas fa-plus mr-1.5"></i> New Bucket
+                        </button>
+                        <button onclick="refreshBuckets()" class="bg-white border border-slate-200 px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-50 transition flex items-center text-xs font-bold shadow-sm">
+                            <i class="fas fa-sync-alt mr-2 text-indigo-500"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <!-- Left: Bucket List -->
+                    <div class="w-full lg:w-60 bg-slate-50 rounded-3xl border border-slate-100 p-4 h-fit max-h-[calc(100vh-200px)] overflow-y-auto">
+                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Buckets</h3>
+                        <div id="bucket-list" class="space-y-1">
+                            <p class="text-[10px] text-slate-400 italic px-2">Loading buckets...</p>
+                        </div>
+                    </div>
+                    <!-- Right: Objects -->
+                    <div class="flex-1 bg-white rounded-3xl border border-slate-100 p-6 min-h-[500px] flex flex-col shadow-sm">
+                        <div id="bucket-header" class="mb-6 flex justify-between items-center">
+                            <div class="flex items-center">
+                                <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mr-3 text-xs">
+                                    <i class="fas fa-folder-open"></i>
+                                </span>
+                                <h3 id="current-bucket-name" class="text-lg font-bold text-slate-900">Select Bucket</h3>
+                                <span id="current-bucket-public" class="ml-2 hidden text-[8px] bg-emerald-100 text-emerald-600 px-1 rounded">PUBLIC</span>
+                            </div>
+                            <div id="storage-actions" class="hidden flex space-x-2">
+                                <input type="file" id="file-upload-input" class="hidden" onchange="handleFileUpload()">
+                                <button onclick="document.getElementById('file-upload-input').click()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-500 shadow-md shadow-indigo-600/10 transition btn-hover-effect">
+                                    <i class="fas fa-upload mr-1.5"></i> Upload File
+                                </button>
+                                <button onclick="handleDeleteBucket()" class="bg-red-50 text-red-600 px-3 py-2 rounded-xl text-xs font-bold hover:bg-red-100 transition">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex-1 overflow-auto rounded-2xl border border-slate-100 bg-slate-50/20">
+                            <table class="min-w-full divide-y divide-slate-200">
+                                <thead class="bg-slate-50/80">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest">Name</th>
+                                        <th class="px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest">Size</th>
+                                        <th class="px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest">Type</th>
+                                        <th class="px-4 py-3 text-left text-[9px] font-black text-slate-400 uppercase tracking-widest">Created</th>
+                                        <th class="px-4 py-3 text-right text-[9px] font-black text-slate-400 uppercase tracking-widest">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-slate-200" id="object-list-body">
+                                    <tr><td colspan="5" class="px-4 py-10 text-center text-slate-400 italic text-xs">Select a bucket to view files.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -954,6 +1022,183 @@ GET /rest/v1/orders
                 console.error(err);
             }
         }
+
+        // Storage Logic
+        let currentBucket = null;
+
+        async function refreshBuckets() {
+            if (!token) return;
+            try {
+                const res = await apiFetch('/storage/v1/buckets');
+                if (!res) return;
+                
+                const buckets = await res.json();
+                const list = document.getElementById('bucket-list');
+                list.innerHTML = '';
+                
+                if (buckets.length === 0) {
+                    list.innerHTML = '<p class="text-[10px] text-slate-400 italic p-2">No buckets found.</p>';
+                    return;
+                }
+
+                buckets.forEach(bucket => {
+                    const btn = document.createElement('button');
+                    btn.className = 'w-full text-left px-3 py-2 rounded-xl text-xs hover:bg-slate-100 transition truncate flex items-center group font-bold text-slate-600';
+                    btn.innerHTML = `
+                        <i class="fas fa-folder mr-2 text-slate-300 group-hover:text-indigo-500 transition"></i> 
+                        <span class="flex-1 truncate">${bucket.name}</span>
+                        ${bucket.public || bucket.isPublic ? '<span class="ml-1 text-[8px] bg-emerald-100 text-emerald-600 px-1 rounded">PUBLIC</span>' : ''}
+                    `;
+                    btn.onclick = () => loadBucketObjects(bucket);
+                    list.appendChild(btn);
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadBucketObjects(bucket) {
+            currentBucket = bucket;
+            document.getElementById('current-bucket-name').textContent = bucket.name;
+            document.getElementById('current-bucket-public').classList.toggle('hidden', !(bucket.public || bucket.isPublic));
+            document.getElementById('storage-actions').classList.remove('hidden');
+            
+            try {
+                const res = await apiFetch(`/storage/v1/object/list/${bucket.name}`);
+                if (!res) return;
+                
+                const objects = await res.json();
+                const body = document.getElementById('object-list-body');
+                body.innerHTML = '';
+
+                if (objects.length === 0) {
+                    body.innerHTML = '<tr><td colspan="5" class="px-4 py-10 text-center text-slate-400 italic text-xs">Bucket is empty.</td></tr>';
+                    return;
+                }
+
+                objects.forEach(obj => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="px-4 py-2.5 whitespace-nowrap text-xs text-slate-900 font-bold">${obj.name}</td>
+                        <td class="px-4 py-2.5 whitespace-nowrap text-xs text-slate-500">${(obj.size / 1024).toFixed(1)} KB</td>
+                        <td class="px-4 py-2.5 whitespace-nowrap text-[10px] text-slate-400 uppercase font-bold">${obj.contentType.split('/')[1] || 'FILE'}</td>
+                        <td class="px-4 py-2.5 whitespace-nowrap text-[10px] text-slate-500">${new Date(obj.createdAt).toLocaleDateString()}</td>
+                        <td class="px-4 py-2.5 whitespace-nowrap text-right">
+                            <button onclick="downloadFile('${obj.name}')" class="text-indigo-600 hover:text-indigo-800 p-1.5"><i class="fas fa-download"></i></button>
+                            <button onclick="deleteFile('${obj.name}')" class="text-slate-300 hover:text-red-600 p-1.5 ml-1"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    body.appendChild(tr);
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function openCreateBucket() {
+            const name = prompt('Enter bucket name:');
+            if (!name) return;
+            const isPublic = confirm('Make this bucket public? (Anonymous read access)');
+            
+            try {
+                const res = await apiFetch('/storage/v1/buckets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, isPublic: isPublic })
+                });
+                if (res && res.ok) {
+                    showToast('Bucket created');
+                    refreshBuckets();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function handleDeleteBucket() {
+            if (!currentBucket) return;
+            if (!confirm(`Are you sure you want to delete bucket "${currentBucket.name}" and all its contents?`)) return;
+
+            try {
+                const res = await apiFetch(`/storage/v1/buckets/${currentBucket.name}`, {
+                    method: 'DELETE'
+                });
+                if (res && res.ok) {
+                    showToast('Bucket deleted');
+                    currentBucket = null;
+                    document.getElementById('current-bucket-name').textContent = 'Select Bucket';
+                    document.getElementById('storage-actions').classList.add('hidden');
+                    document.getElementById('object-list-body').innerHTML = '<tr><td colspan="5" class="px-4 py-10 text-center text-slate-400 italic text-xs">Select a bucket to view files.</td></tr>';
+                    refreshBuckets();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function handleFileUpload() {
+            const input = document.getElementById('file-upload-input');
+            if (!input.files.length || !currentBucket) return;
+            
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await apiFetch(`/storage/v1/object/${currentBucket.name}/${file.name}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (res && res.ok) {
+                    showToast('File uploaded');
+                    loadBucketObjects(currentBucket);
+                }
+                input.value = ''; // Reset
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function downloadFile(name) {
+            if (!currentBucket) return;
+            try {
+                const res = await apiFetch(`/storage/v1/object/${currentBucket.name}/${name}`);
+                if (res && res.ok) {
+                    const blob = await res.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = name;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function deleteFile(name) {
+            if (!currentBucket || !confirm(`Delete "${name}"?`)) return;
+            try {
+                const res = await apiFetch(`/storage/v1/object/${currentBucket.name}/${name}`, {
+                    method: 'DELETE'
+                });
+                if (res && res.ok) {
+                    showToast('File deleted');
+                    loadBucketObjects(currentBucket);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Update showSection to handle storage
+        const originalShowSection = showSection;
+        showSection = function(name) {
+            originalShowSection(name);
+            if (name === 'storage') refreshBuckets();
+        };
     </script>
 </body>
 </html>
