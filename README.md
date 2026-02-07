@@ -51,6 +51,7 @@ Tables can be marked as **Public (Read-Only)** in the Dashboard or via the Schem
 
 - [BRD](BRD_SUPA_SPRING.md)
 - [SRS](SRS_SUPA_SPRING.md)
+- [Platform Comparison (Springbase vs. Supabase)](PLATFORM_COMPARISON.md)
 - **Interactive API Docs**: Enhanced Swagger (SpringDoc) UI is available at `http://localhost:1890/swagger-ui.html`. 
   - Exhaustive details for Auth, Dynamic DB, and Admin APIs.
   - Comprehensive parameter, response, and error code (400, 401, 403, 404, 500) documentation.
