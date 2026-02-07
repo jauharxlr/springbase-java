@@ -61,7 +61,7 @@ public class AutomationService {
         if ("WEBHOOK".equalsIgnoreCase(rule.getActionType())) {
             executeWebhook(rule.getConfiguration(), event.getData());
         } else if ("DB_ACTION".equalsIgnoreCase(rule.getActionType())) {
-            executeDbAction(rule.getConfiguration(), event.getUserId(), event.getProjectRef());
+            executeDbAction(rule.getConfiguration(), event.getUserId(), event.getProjectRef(), event.getCompanyId(), event.getTenantId());
         }
     }
 
@@ -74,8 +74,8 @@ public class AutomationService {
         }
     }
 
-    private void executeDbAction(String configJson, String userId, String projectRef) throws Exception {
+    private void executeDbAction(String configJson, String userId, String projectRef, String companyId, String tenantId) throws Exception {
         List<ActionOperation> operations = objectMapper.readValue(configJson, new TypeReference<List<ActionOperation>>() {});
-        actionService.executeActions(operations, userId, projectRef);
+        actionService.executeActions(operations, userId, projectRef, companyId, tenantId);
     }
 }

@@ -27,4 +27,10 @@ public class User {
 
     @Column(nullable = false)
     private String role; // anon, authenticated, service_role
+
+    @Column
+    private UUID companyId;
+
+    @Column
+    private UUID tenantId;
 }

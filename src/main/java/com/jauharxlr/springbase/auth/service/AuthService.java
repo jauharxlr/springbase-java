@@ -27,9 +27,11 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .projectRef(request.getProjectRef())
                 .role("authenticated")
+                .companyId(request.getCompanyId())
+                .tenantId(request.getTenantId())
                 .build();
         userRepository.save(user);
-        String token = jwtUtils.generateToken(user.getId(), user.getProjectRef(), user.getRole());
+        String token = jwtUtils.generateToken(user.getId(), user.getProjectRef(), user.getRole(), user.getCompanyId(), user.getTenantId());
         return AuthResponse.builder()
                 .accessToken(token)
                 .tokenType("Bearer")
@@ -46,7 +48,7 @@ public class AuthService {
             throw new RuntimeException("Invalid password");
         }
 
-        String token = jwtUtils.generateToken(user.getId(), user.getProjectRef(), user.getRole());
+        String token = jwtUtils.generateToken(user.getId(), user.getProjectRef(), user.getRole(), user.getCompanyId(), user.getTenantId());
         return AuthResponse.builder()
                 .accessToken(token)
                 .tokenType("Bearer")

@@ -20,10 +20,12 @@ public class JwtUtils {
     private final SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     private final long expiration = 86400000; // 24 hours
 
-    public String generateToken(UUID userId, String projectRef, String role) {
+    public String generateToken(UUID userId, String projectRef, String role, UUID companyId, UUID tenantId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("project_ref", projectRef);
         claims.put("role", role);
+        if (companyId != null) claims.put("company_id", companyId.toString());
+        if (tenantId != null) claims.put("tenant_id", tenantId.toString());
         return createToken(claims, userId.toString());
     }
 
@@ -56,6 +58,14 @@ public class JwtUtils {
 
     public String extractRole(String token) {
         return extractAllClaims(token).get("role", String.class);
+    }
+
+    public String extractCompanyId(String token) {
+        return extractAllClaims(token).get("company_id", String.class);
+    }
+
+    public String extractTenantId(String token) {
+        return extractAllClaims(token).get("tenant_id", String.class);
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {

@@ -90,25 +90,12 @@ public class RestApiController {
         
         String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String projectRef = (String) request.getAttribute("project_ref");
+        String companyId = (String) request.getAttribute("company_id");
+        String tenantId = (String) request.getAttribute("tenant_id");
         
-        return ResponseEntity.ok(dynamicDbService.select(table, projectRef, userId, request.getParameterMap()));
+        return ResponseEntity.ok(dynamicDbService.select(table, projectRef, userId, companyId, tenantId, request.getParameterMap()));
     }
 
-    @Operation(
-        summary = "Insert into a table",
-        description = "Inserts a new record into a user-defined table. " +
-                      "**Ownership Injection**: If the table contains a 'user_id' or 'owner_id' column, it is automatically populated with the authenticated user's UUID from the JWT. " +
-                      "The body should be a JSON object where keys correspond to column names."
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Record successfully created"),
-        @ApiResponse(responseCode = "400", description = "Malformed JSON, data type mismatch, or missing required columns",
-                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Valid JWT required",
-                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "500", description = "Database error or constraint violation",
-                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })
     @PostMapping("/{table}")
     public ResponseEntity<Void> post(
             @PathVariable String table,
@@ -117,7 +104,10 @@ public class RestApiController {
         
         String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String projectRef = (String) request.getAttribute("project_ref");
-        dynamicDbService.insert(table, projectRef, userId, data);
+        String companyId = (String) request.getAttribute("company_id");
+        String tenantId = (String) request.getAttribute("tenant_id");
+
+        dynamicDbService.insert(table, projectRef, userId, companyId, tenantId, data);
         return ResponseEntity.status(201).build();
     }
 
@@ -129,7 +119,10 @@ public class RestApiController {
         
         String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String projectRef = (String) request.getAttribute("project_ref");
-        dynamicDbService.update(table, projectRef, userId, request.getParameterMap(), data);
+        String companyId = (String) request.getAttribute("company_id");
+        String tenantId = (String) request.getAttribute("tenant_id");
+
+        dynamicDbService.update(table, projectRef, userId, companyId, tenantId, request.getParameterMap(), data);
         return ResponseEntity.ok().build();
     }
 
@@ -140,7 +133,10 @@ public class RestApiController {
         
         String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String projectRef = (String) request.getAttribute("project_ref");
-        dynamicDbService.delete(table, projectRef, userId, request.getParameterMap());
+        String companyId = (String) request.getAttribute("company_id");
+        String tenantId = (String) request.getAttribute("tenant_id");
+
+        dynamicDbService.delete(table, projectRef, userId, companyId, tenantId, request.getParameterMap());
         return ResponseEntity.ok().build();
     }
 }

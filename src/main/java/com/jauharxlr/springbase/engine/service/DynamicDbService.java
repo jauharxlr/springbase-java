@@ -19,7 +19,7 @@ public class DynamicDbService {
     private final TableMetadataRepository tableMetadataRepository;
     private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
-    public List<Map<String, Object>> select(String tableName, String projectRef, String userId, Map<String, String[]> params) {
+    public List<Map<String, Object>> select(String tableName, String projectRef, String userId, String companyId, String tenantId, Map<String, String[]> params) {
         StringBuilder sql = new StringBuilder("SELECT * FROM ").append(tableName);
         Map<String, Object> sqlParams = new HashMap<>();
         
@@ -42,10 +42,17 @@ public class DynamicDbService {
                     if (hasColumn(tableName, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
                     if (hasColumn(tableName, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
                     if (hasColumn(tableName, "client_id")) policyClauses.add("client_id = :auth_uid");
-                    if (hasColumn(tableName, "company_id")) policyClauses.add("company_id = :auth_uid");
-                    if (hasColumn(tableName, "tenant_id")) policyClauses.add("tenant_id = :auth_uid");
+                    
+                    if (companyId != null && hasColumn(tableName, "company_id")) {
+                        sqlParams.put("auth_company_id", UUID.fromString(companyId));
+                        policyClauses.add("company_id = :auth_company_id");
+                    }
+                    if (tenantId != null && hasColumn(tableName, "tenant_id")) {
+                        sqlParams.put("auth_tenant_id", UUID.fromString(tenantId));
+                        policyClauses.add("tenant_id = :auth_tenant_id");
+                    }
                 } catch (IllegalArgumentException e) {
-                    log.warn("Invalid UUID for userId: {}", userId);
+                    log.warn("Invalid UUID for security claims: {}", userId);
                 }
             }
 
@@ -97,7 +104,7 @@ public class DynamicDbService {
                hasColumn(tableName, "tenant_id");
     }
 
-    public void insert(String tableName, String projectRef, String userId, Map<String, Object> data) {
+    public void insert(String tableName, String projectRef, String userId, String companyId, String tenantId, Map<String, Object> data) {
         // Ownership injection for insert
         if (userId != null && !"anonymous".equals(userId)) {
             try {
@@ -106,13 +113,16 @@ public class DynamicDbService {
                     data.put("user_id", authUid);
                 } else if (hasColumn(tableName, "owner_id")) {
                     data.put("owner_id", authUid);
-                } else if (hasColumn(tableName, "company_id")) {
-                    data.put("company_id", authUid);
-                } else if (hasColumn(tableName, "tenant_id")) {
-                    data.put("tenant_id", authUid);
+                }
+                
+                if (companyId != null && hasColumn(tableName, "company_id") && !data.containsKey("company_id")) {
+                    data.put("company_id", UUID.fromString(companyId));
+                }
+                if (tenantId != null && hasColumn(tableName, "tenant_id") && !data.containsKey("tenant_id")) {
+                    data.put("tenant_id", UUID.fromString(tenantId));
                 }
             } catch (IllegalArgumentException e) {
-                log.warn("Invalid UUID for userId: {}", userId);
+                log.warn("Invalid UUID for security claims: {}", userId);
             }
         }
 
@@ -123,7 +133,7 @@ public class DynamicDbService {
         jdbcTemplate.update(sql, data);
         
         eventPublisher.publishEvent(new com.jauharxlr.springbase.engine.event.CrudEvent(
-                com.jauharxlr.springbase.engine.event.CrudEvent.EventType.ON_INSERT, tableName, projectRef, userId, data));
+                com.jauharxlr.springbase.engine.event.CrudEvent.EventType.ON_INSERT, tableName, projectRef, userId, companyId, tenantId, data));
     }
 
     private boolean hasColumn(String tableName, String columnName) {
@@ -140,7 +150,7 @@ public class DynamicDbService {
         }
     }
 
-    public void update(String tableName, String projectRef, String userId, Map<String, String[]> params, Map<String, Object> data) {
+    public void update(String tableName, String projectRef, String userId, String companyId, String tenantId, Map<String, String[]> params, Map<String, Object> data) {
         StringBuilder sql = new StringBuilder("UPDATE ").append(tableName).append(" SET ");
         Map<String, Object> sqlParams = new HashMap<>();
         
@@ -164,14 +174,21 @@ public class DynamicDbService {
                 if (hasColumn(tableName, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
                 if (hasColumn(tableName, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
                 if (hasColumn(tableName, "client_id")) policyClauses.add("client_id = :auth_uid");
-                if (hasColumn(tableName, "company_id")) policyClauses.add("company_id = :auth_uid");
-                if (hasColumn(tableName, "tenant_id")) policyClauses.add("tenant_id = :auth_uid");
+                
+                if (companyId != null && hasColumn(tableName, "company_id")) {
+                    sqlParams.put("auth_company_id", UUID.fromString(companyId));
+                    policyClauses.add("company_id = :auth_company_id");
+                }
+                if (tenantId != null && hasColumn(tableName, "tenant_id")) {
+                    sqlParams.put("auth_tenant_id", UUID.fromString(tenantId));
+                    policyClauses.add("tenant_id = :auth_tenant_id");
+                }
                 
                 if (!policyClauses.isEmpty()) {
                     conditions.add("(" + String.join(" OR ", policyClauses) + ")");
                 }
             } catch (IllegalArgumentException e) {
-                log.warn("Invalid UUID for userId: {}", userId);
+                log.warn("Invalid UUID for security claims: {}", userId);
                 conditions.add("1=0");
             }
         } else {
@@ -202,10 +219,10 @@ public class DynamicDbService {
         jdbcTemplate.update(sql.toString(), sqlParams);
 
         eventPublisher.publishEvent(new com.jauharxlr.springbase.engine.event.CrudEvent(
-                com.jauharxlr.springbase.engine.event.CrudEvent.EventType.ON_UPDATE, tableName, projectRef, userId, data));
+                com.jauharxlr.springbase.engine.event.CrudEvent.EventType.ON_UPDATE, tableName, projectRef, userId, companyId, tenantId, data));
     }
 
-    public void delete(String tableName, String projectRef, String userId, Map<String, String[]> params) {
+    public void delete(String tableName, String projectRef, String userId, String companyId, String tenantId, Map<String, String[]> params) {
         StringBuilder sql = new StringBuilder("DELETE FROM ").append(tableName);
         Map<String, Object> sqlParams = new HashMap<>();
         
@@ -222,14 +239,21 @@ public class DynamicDbService {
                 if (hasColumn(tableName, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
                 if (hasColumn(tableName, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
                 if (hasColumn(tableName, "client_id")) policyClauses.add("client_id = :auth_uid");
-                if (hasColumn(tableName, "company_id")) policyClauses.add("company_id = :auth_uid");
-                if (hasColumn(tableName, "tenant_id")) policyClauses.add("tenant_id = :auth_uid");
+                
+                if (companyId != null && hasColumn(tableName, "company_id")) {
+                    sqlParams.put("auth_company_id", UUID.fromString(companyId));
+                    policyClauses.add("company_id = :auth_company_id");
+                }
+                if (tenantId != null && hasColumn(tableName, "tenant_id")) {
+                    sqlParams.put("auth_tenant_id", UUID.fromString(tenantId));
+                    policyClauses.add("tenant_id = :auth_tenant_id");
+                }
                 
                 if (!policyClauses.isEmpty()) {
                     conditions.add("(" + String.join(" OR ", policyClauses) + ")");
                 }
             } catch (IllegalArgumentException e) {
-                log.warn("Invalid UUID for userId: {}", userId);
+                log.warn("Invalid UUID for security claims: {}", userId);
                 conditions.add("1=0");
             }
         } else {
@@ -258,7 +282,7 @@ public class DynamicDbService {
         jdbcTemplate.update(sql.toString(), sqlParams);
 
         eventPublisher.publishEvent(new com.jauharxlr.springbase.engine.event.CrudEvent(
-                com.jauharxlr.springbase.engine.event.CrudEvent.EventType.ON_DELETE, tableName, projectRef, userId, Map.of()));
+                com.jauharxlr.springbase.engine.event.CrudEvent.EventType.ON_DELETE, tableName, projectRef, userId, companyId, tenantId, Map.of()));
     }
 
     private String getSqlOperator(String op) {

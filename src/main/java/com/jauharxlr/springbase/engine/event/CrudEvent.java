@@ -11,13 +11,17 @@ public class CrudEvent {
     private final String tableName;
     private final String projectRef;
     private final String userId;
+    private final String companyId;
+    private final String tenantId;
     private final Map<String, Object> data;
 
-    public CrudEvent(EventType type, String tableName, String projectRef, String userId, Map<String, Object> data) {
+    public CrudEvent(EventType type, String tableName, String projectRef, String userId, String companyId, String tenantId, Map<String, Object> data) {
         this.type = type;
         this.tableName = tableName;
         this.projectRef = projectRef;
         this.userId = userId;
+        this.companyId = companyId;
+        this.tenantId = tenantId;
         this.data = data;
     }
 }

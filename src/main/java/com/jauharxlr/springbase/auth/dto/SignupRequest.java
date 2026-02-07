@@ -14,4 +14,10 @@ public class SignupRequest {
     
     @Schema(description = "Unique reference for the project/tenant the user belongs to", example = "my-awesome-project")
     private String projectRef;
+
+    @Schema(description = "Optional company ID to associate with the user", example = "550e8400-e29b-41d4-a716-446655440000")
+    private java.util.UUID companyId;
+
+    @Schema(description = "Optional tenant ID to associate with the user", example = "550e8400-e29b-41d4-a716-446655440001")
+    private java.util.UUID tenantId;
 }

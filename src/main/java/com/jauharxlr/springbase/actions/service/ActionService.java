@@ -19,7 +19,7 @@ public class ActionService {
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
     @Transactional
-    public void executeActions(List<ActionOperation> operations, String userId, String projectRef) {
+    public void executeActions(List<ActionOperation> operations, String userId, String projectRef, String companyId, String tenantId) {
         int step = 0;
         try {
             for (ActionOperation op : operations) {
@@ -27,10 +27,10 @@ public class ActionService {
                 log.info("Executing action step {}: {} on table {}", step, op.getOp(), op.getTable());
                 
                 switch (op.getOp().toUpperCase()) {
-                    case "INSERT" -> dynamicDbService.insert(op.getTable(), projectRef, userId, op.getData());
-                    case "UPDATE" -> dynamicDbService.update(op.getTable(), projectRef, userId, convertFilters(op.getFilters()), op.getData());
-                    case "DELETE" -> dynamicDbService.delete(op.getTable(), projectRef, userId, convertFilters(op.getFilters()));
-                    case "PRE_CONDITION" -> checkPreCondition(op, userId, projectRef);
+                    case "INSERT" -> dynamicDbService.insert(op.getTable(), projectRef, userId, companyId, tenantId, op.getData());
+                    case "UPDATE" -> dynamicDbService.update(op.getTable(), projectRef, userId, companyId, tenantId, convertFilters(op.getFilters()), op.getData());
+                    case "DELETE" -> dynamicDbService.delete(op.getTable(), projectRef, userId, companyId, tenantId, convertFilters(op.getFilters()));
+                    case "PRE_CONDITION" -> checkPreCondition(op, userId, projectRef, companyId, tenantId);
                     default -> throw new IllegalArgumentException("Unsupported operation: " + op.getOp());
                 }
             }
@@ -47,7 +47,7 @@ public class ActionService {
         return result;
     }
 
-    private void checkPreCondition(ActionOperation op, String userId, String projectRef) {
+    private void checkPreCondition(ActionOperation op, String userId, String projectRef, String companyId, String tenantId) {
         String table = op.getTable();
         String condition = op.getCondition(); // e.g. "balance >= 100"
         Map<String, String> filters = op.getFilters();
@@ -92,8 +92,15 @@ public class ActionService {
             if (hasColumn(table, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
             if (hasColumn(table, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
             if (hasColumn(table, "client_id")) policyClauses.add("client_id = :auth_uid");
-            if (hasColumn(table, "company_id")) policyClauses.add("company_id = :auth_uid");
-            if (hasColumn(table, "tenant_id")) policyClauses.add("tenant_id = :auth_uid");
+            
+            if (companyId != null && hasColumn(table, "company_id")) {
+                sqlParams.put("auth_company_id", UUID.fromString(companyId));
+                policyClauses.add("company_id = :auth_company_id");
+            }
+            if (tenantId != null && hasColumn(table, "tenant_id")) {
+                sqlParams.put("auth_tenant_id", UUID.fromString(tenantId));
+                policyClauses.add("tenant_id = :auth_tenant_id");
+            }
             
             if (!policyClauses.isEmpty()) {
                 whereClauses.add("(" + String.join(" OR ", policyClauses) + ")");

@@ -37,6 +37,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String userId = null;
         String role = null;
         String projectRef = "default";
+        String companyId = null;
+        String tenantId = null;
 
         try {
             // 1. Check for Service Role Key (Admin override)
@@ -51,6 +53,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     userId = jwtUtils.extractUserId(jwt);
                     role = jwtUtils.extractRole(jwt);
                     projectRef = jwtUtils.extractProjectRef(jwt);
+                    companyId = jwtUtils.extractCompanyId(jwt);
+                    tenantId = jwtUtils.extractTenantId(jwt);
                 }
             }
             // 3. Check for Anon Key
@@ -65,6 +69,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 request.setAttribute("project_ref", projectRef);
+                if (companyId != null) request.setAttribute("company_id", companyId);
+                if (tenantId != null) request.setAttribute("tenant_id", tenantId);
                 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }

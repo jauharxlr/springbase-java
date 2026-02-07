@@ -44,8 +44,10 @@ public class ActionController {
     public ResponseEntity<Void> execute(@RequestBody ActionRequest request, HttpServletRequest httpRequest) {
         String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String projectRef = (String) httpRequest.getAttribute("project_ref");
+        String companyId = (String) httpRequest.getAttribute("company_id");
+        String tenantId = (String) httpRequest.getAttribute("tenant_id");
         
-        actionService.executeActions(request.getOperations(), userId, projectRef);
+        actionService.executeActions(request.getOperations(), userId, projectRef, companyId, tenantId);
         return ResponseEntity.ok().build();
     }
 }
