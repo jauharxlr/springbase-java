@@ -40,6 +40,7 @@ public class DynamicDbService {
                     if (hasColumn(tableName, "owner_id")) policyClauses.add("owner_id = :auth_uid");
                     if (hasColumn(tableName, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
                     if (hasColumn(tableName, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
+                    if (hasColumn(tableName, "client_id")) policyClauses.add("client_id = :auth_uid");
                 } catch (IllegalArgumentException e) {
                     log.warn("Invalid UUID for userId: {}", userId);
                 }
@@ -94,7 +95,8 @@ public class DynamicDbService {
         return hasColumn(tableName, "user_id") || 
                hasColumn(tableName, "owner_id") || 
                hasColumn(tableName, "shared_with_id") || 
-               hasColumn(tableName, "merchant_id");
+               hasColumn(tableName, "merchant_id") ||
+               hasColumn(tableName, "client_id");
     }
 
     public void insert(String tableName, String userId, Map<String, Object> data) {
@@ -148,6 +150,7 @@ public class DynamicDbService {
             if (hasColumn(tableName, "owner_id")) policyClauses.add("owner_id = :auth_uid");
             if (hasColumn(tableName, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
             if (hasColumn(tableName, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
+            if (hasColumn(tableName, "client_id")) policyClauses.add("client_id = :auth_uid");
             
             if (!policyClauses.isEmpty()) {
                 conditions.add("(" + String.join(" OR ", policyClauses) + ")");
@@ -195,6 +198,7 @@ public class DynamicDbService {
             if (hasColumn(tableName, "owner_id")) policyClauses.add("owner_id = :auth_uid");
             if (hasColumn(tableName, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
             if (hasColumn(tableName, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
+            if (hasColumn(tableName, "client_id")) policyClauses.add("client_id = :auth_uid");
             
             if (!policyClauses.isEmpty()) {
                 conditions.add("(" + String.join(" OR ", policyClauses) + ")");

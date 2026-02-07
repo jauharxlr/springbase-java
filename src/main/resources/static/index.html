@@ -496,21 +496,49 @@ GET /rest/v1/tasks?select=id,title,projects(name)
                         <p class="text-[10px] text-slate-500 mt-3 leading-relaxed">Fetch related data automatically via foreign key detection.</p>
                     </div>
 
-                    <!-- RLS -->
+                    <!-- Smart-Policy & RLS -->
                     <div class="bg-indigo-900 rounded-3xl p-6 shadow-xl border border-white/10">
                         <div class="flex items-center mb-4">
                             <span class="w-8 h-8 bg-indigo-500/20 text-emerald-400 rounded-lg flex items-center justify-center mr-3 text-xs"><i class="fas fa-user-shield"></i></span>
-                            <h3 class="font-bold text-white">Smart-Policy Guards</h3>
+                            <h3 class="font-bold text-white">Smart-Policy Security</h3>
                         </div>
                         <p class="text-indigo-200 text-[10px] leading-relaxed mb-4">
-                            Row-Level Security (RLS) is active by default. Every query is filtered by the authenticated <code class="bg-indigo-800 px-1 rounded">user_id</code>. 
-                            Advanced scenarios support sharing and public access.
+                            SpringBase automatically secures your data using <strong>Stakeholder Columns</strong>. 
+                            If a table contains any of these columns, the engine grants access ONLY to the user matching the ID.
                         </p>
-                        <div class="bg-slate-950/50 p-3 rounded-xl border border-white/5 font-mono text-[10px] text-emerald-400 space-y-2">
-                            <div>-- Default Ownership</div>
-                            <div>WHERE user_id = auth.uid()</div>
-                            <div class="mt-2 text-indigo-400">-- Multi-Party / CRM Patterns</div>
-                            <div>WHERE user_id = auth.uid() OR shared_with_id = auth.uid() OR merchant_id = auth.uid()</div>
+                        <div class="bg-slate-950/50 p-4 rounded-xl border border-white/5 font-mono text-[10px] text-emerald-400 space-y-3">
+                            <div>-- Stakeholder Allowlist (Auto-detected)</div>
+                            <div class="grid grid-cols-2 gap-2 text-indigo-300">
+                                <span>• user_id</span>
+                                <span>• owner_id</span>
+                                <span>• merchant_id</span>
+                                <span>• client_id</span>
+                                <span>• shared_with_id</span>
+                            </div>
+                            <div class="mt-2 text-indigo-400">-- Logic Applied:</div>
+                            <div>WHERE user_id = auth.uid() OR merchant_id = auth.uid() ...</div>
+                        </div>
+                        <p class="text-[9px] text-indigo-400 mt-3 italic">Note: product_id, category_id, and other general IDs are ignored to prevent accidental filtering.</p>
+                    </div>
+
+                    <!-- Public Access -->
+                    <div class="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm">
+                        <div class="flex items-center mb-4">
+                            <span class="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center mr-3 text-xs"><i class="fas fa-eye"></i></span>
+                            <h3 class="font-bold text-slate-900">Public Read (Anon Key)</h3>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-4">
+                            Toggle <strong>Public Read</strong> in the Schema Editor to allow anonymous access.
+                        </p>
+                        <div class="space-y-3">
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Effect on Auth</p>
+                                <p class="text-[10px] text-slate-600">If public, the <code class="bg-slate-200 px-1 rounded">anon</code> key can read all rows without ownership checks.</p>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <p class="text-[9px] font-bold text-slate-400 uppercase mb-1">Write Safety</p>
+                                <p class="text-[10px] text-slate-600">Write operations (POST/PATCH/DELETE) <strong>always</strong> require a valid JWT and follow Stakeholder rules.</p>
+                            </div>
                         </div>
                     </div>
 
@@ -518,30 +546,32 @@ GET /rest/v1/tasks?select=id,title,projects(name)
                     <div class="bg-slate-50 rounded-3xl p-6 border border-slate-200 col-span-1 lg:col-span-2">
                         <div class="flex items-center mb-4">
                             <span class="w-8 h-8 bg-white text-indigo-600 rounded-lg flex items-center justify-center mr-3 text-xs shadow-sm"><i class="fas fa-store"></i></span>
-                            <h3 class="font-bold text-slate-900 text-sm">Customer-Merchant Scenario</h3>
+                            <h3 class="font-bold text-slate-900 text-sm">Merchant-Customer Visibility Example</h3>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="text-xs text-slate-600 space-y-2">
-                                <p>To build a Marketplace or CRM where both a customer and a merchant can see a record, use special column names:</p>
-                                <ul class="list-disc ml-4 space-y-1">
-                                    <li><code class="font-bold text-indigo-600">user_id</code>: The primary owner (e.g., the Customer)</li>
-                                    <li><code class="font-bold text-indigo-600">merchant_id</code>: The service provider</li>
-                                    <li><code class="font-bold text-indigo-600">shared_with_id</code>: An additional collaborator</li>
-                                </ul>
-                                <p class="pt-2">SpringBase automatically grants read/write access if the <code class="bg-slate-200 px-1 rounded">auth.uid()</code> matches <strong>ANY</strong> of these columns.</p>
+                            <div class="text-xs text-slate-600 space-y-3">
+                                <p>In a marketplace, an 'order' needs to be visible to both the person who bought it and the merchant who sells it.</p>
+                                <div class="bg-white p-3 rounded-xl border border-slate-200">
+                                    <p class="font-bold text-indigo-600 mb-1">The Setup:</p>
+                                    <p class="text-[10px]">Create an <code class="font-mono">orders</code> table with:</p>
+                                    <ul class="list-disc ml-4 mt-1 text-[10px] space-y-1">
+                                        <li><code class="font-bold">user_id</code> (Customer)</li>
+                                        <li><code class="font-bold">merchant_id</code> (Seller)</li>
+                                        <li>Mark both as <strong>Stakeholder</strong> in Editor.</li>
+                                    </ul>
+                                </div>
+                                <p class="pt-2 text-[10px]">The Customer sees it because they match <code class="bg-slate-200 px-1">user_id</code>. The Merchant sees it because they match <code class="bg-slate-200 px-1">merchant_id</code>.</p>
                             </div>
-                            <div class="code-block text-[10px]">
--- Example: 'orders' table structure
-CREATE TABLE orders (
-  id UUID PRIMARY KEY,
-  user_id UUID, -- Customer
-  merchant_id UUID, -- Seller
-  total DECIMAL,
-  status TEXT
-);
-
--- Both Customer and Seller can now access:
+                            <div class="code-block text-[10px] leading-relaxed">
+-- API usage is identical for both parties
+-- The engine handles the heavy lifting
 GET /rest/v1/orders
+
+-- Result for Customer A: 
+-- [{ "id": 1, "user_id": "A", "merchant_id": "B", ... }]
+
+-- Result for Merchant B:
+-- [{ "id": 1, "user_id": "A", "merchant_id": "B", ... }]
                             </div>
                         </div>
                     </div>
@@ -800,14 +830,19 @@ GET /rest/v1/orders
             const div = document.createElement('div');
             div.className = 'flex space-x-2 items-center bg-white p-2 rounded-xl border border-slate-100 shadow-sm transition-all hover:border-indigo-200';
             div.innerHTML = `
-                <input type="text" placeholder="Name" class="col-name w-1/3 rounded-lg border-transparent bg-slate-50 px-2 py-1.5 text-xs font-bold focus:bg-white focus:ring-1 focus:ring-indigo-500">
-                <select class="col-type w-1/3 rounded-lg border-transparent bg-slate-50 px-2 py-1.5 text-[10px] font-bold focus:bg-white focus:ring-1 focus:ring-indigo-500">
+                <input type="text" placeholder="Name" class="col-name w-1/4 rounded-lg border-transparent bg-slate-50 px-2 py-1.5 text-xs font-bold focus:bg-white focus:ring-1 focus:ring-indigo-500">
+                <select class="col-type w-1/4 rounded-lg border-transparent bg-slate-50 px-2 py-1.5 text-[10px] font-bold focus:bg-white focus:ring-1 focus:ring-indigo-500">
                     <option value="VARCHAR(255)">TEXT</option>
                     <option value="INTEGER">NUMBER</option>
                     <option value="BOOLEAN">BOOL</option>
                     <option value="TIMESTAMP">DATE</option>
                     <option value="UUID">UUID</option>
                 </select>
+                <div class="flex items-center space-x-1 w-1/3">
+                    <input type="checkbox" class="col-stakeholder sr-only peer" id="stake-${Date.now()}">
+                    <label for="stake-${Date.now()}" class="relative w-7 h-4 bg-slate-200 rounded-full cursor-pointer peer peer-checked:bg-indigo-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-3"></label>
+                    <span class="text-[9px] font-bold text-slate-400">Stakeholder?</span>
+                </div>
                 <button onclick="this.parentElement.remove()" class="text-slate-300 hover:text-red-500 px-2 transition"><i class="fas fa-times text-[10px]"></i></button>
             `;
             container.appendChild(div);

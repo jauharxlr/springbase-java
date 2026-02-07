@@ -7,8 +7,29 @@ SupaSpring is a high-performance, open-source alternative to Supabase, built ent
 - [x] Project Initialization (Spring Boot 3.5.10, Java 21)
 - [x] Auth Module (Email/Password, JWT, Multi-tenancy)
 - [x] Dynamic DB Engine (Auto-CRUD)
-- [x] Ownership-based Security
+- [x] Smart-Policy Security & Stakeholder Columns
 - [x] AI-First Workflow (SupaShell & JSON-to-DDL)
+
+## Smart-Policy Security
+
+SpringBase features a built-in **Smart-Policy** engine that automatically applies Row-Level Security (RLS) based on specific column names. When a table contains any of the following "Stakeholder Columns", the engine automatically filters queries so that users can only see records where they are a stakeholder.
+
+### Stakeholder Columns
+- `user_id`: The primary owner of the record.
+- `owner_id`: Alternative owner identifier.
+- `merchant_id`: The service provider or merchant associated with the record.
+- `client_id`: The client or customer associated with the record.
+- `shared_with_id`: An additional collaborator who has access.
+
+The engine uses an `OR` logic: `WHERE user_id = :uid OR owner_id = :uid OR ...`. 
+General ID columns like `product_id` or `category_id` are **ignored** by the security engine to prevent false-positive filters, ensuring that global resources remain accessible.
+
+## Public (Read-Only) Access
+
+Tables can be marked as **Public (Read-Only)** in the Dashboard or via the Schema Editor. When enabled:
+- Anonymous users (using the `anon` key) can read all data from the table.
+- Ownership-based security filters are bypassed for read operations.
+- Write operations (Insert/Update/Delete) still require authentication and follow ownership rules.
 
 ## Technical Specifications
 
