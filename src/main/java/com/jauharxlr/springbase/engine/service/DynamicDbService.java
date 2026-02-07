@@ -104,7 +104,7 @@ public class DynamicDbService {
                hasColumn(tableName, "tenant_id");
     }
 
-    public void insert(String tableName, String projectRef, String userId, String companyId, String tenantId, Map<String, Object> data) {
+    public Map<String, Object> insert(String tableName, String projectRef, String userId, String companyId, String tenantId, Map<String, Object> data) {
         // Ownership injection for insert
         if (userId != null && !"anonymous".equals(userId)) {
             try {
@@ -130,10 +130,18 @@ public class DynamicDbService {
         String placeholders = data.keySet().stream().map(k -> ":" + k).collect(Collectors.joining(", "));
         String sql = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + placeholders + ")";
         
-        jdbcTemplate.update(sql, data);
+        org.springframework.jdbc.support.KeyHolder keyHolder = new org.springframework.jdbc.support.GeneratedKeyHolder();
+        jdbcTemplate.update(sql, new org.springframework.jdbc.core.namedparam.MapSqlParameterSource(data), keyHolder);
         
+        Map<String, Object> result = new HashMap<>(data);
+        if (keyHolder.getKeys() != null) {
+            result.putAll(keyHolder.getKeys());
+        }
+
         eventPublisher.publishEvent(new com.jauharxlr.springbase.engine.event.CrudEvent(
-                com.jauharxlr.springbase.engine.event.CrudEvent.EventType.ON_INSERT, tableName, projectRef, userId, companyId, tenantId, data));
+                com.jauharxlr.springbase.engine.event.CrudEvent.EventType.ON_INSERT, tableName, projectRef, userId, companyId, tenantId, result));
+        
+        return result;
     }
 
     private boolean hasColumn(String tableName, String columnName) {

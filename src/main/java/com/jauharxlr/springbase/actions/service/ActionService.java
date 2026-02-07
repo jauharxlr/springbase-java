@@ -21,17 +21,28 @@ public class ActionService {
     @Transactional
     public void executeActions(List<ActionOperation> operations, String userId, String projectRef, String companyId, String tenantId) {
         int step = 0;
+        Map<String, Map<String, Object>> results = new HashMap<>();
+
         try {
             for (ActionOperation op : operations) {
                 step++;
                 log.info("Executing action step {}: {} on table {}", step, op.getOp(), op.getTable());
                 
+                // Resolve data and filters using results from previous steps
+                Map<String, Object> resolvedData = resolveData(op.getData(), results);
+                Map<String, String[]> resolvedFilters = resolveFilters(op.getFilters(), results);
+
+                Map<String, Object> result = null;
                 switch (op.getOp().toUpperCase()) {
-                    case "INSERT" -> dynamicDbService.insert(op.getTable(), projectRef, userId, companyId, tenantId, op.getData());
-                    case "UPDATE" -> dynamicDbService.update(op.getTable(), projectRef, userId, companyId, tenantId, convertFilters(op.getFilters()), op.getData());
-                    case "DELETE" -> dynamicDbService.delete(op.getTable(), projectRef, userId, companyId, tenantId, convertFilters(op.getFilters()));
-                    case "PRE_CONDITION" -> checkPreCondition(op, userId, projectRef, companyId, tenantId);
+                    case "INSERT" -> result = dynamicDbService.insert(op.getTable(), projectRef, userId, companyId, tenantId, resolvedData);
+                    case "UPDATE" -> dynamicDbService.update(op.getTable(), projectRef, userId, companyId, tenantId, resolvedFilters, resolvedData);
+                    case "DELETE" -> dynamicDbService.delete(op.getTable(), projectRef, userId, companyId, tenantId, resolvedFilters);
+                    case "PRE_CONDITION" -> checkPreCondition(op, userId, projectRef, companyId, tenantId, results);
                     default -> throw new IllegalArgumentException("Unsupported operation: " + op.getOp());
+                }
+
+                if (op.getRef() != null && result != null) {
+                    results.put(op.getRef(), result);
                 }
             }
         } catch (Exception e) {
@@ -40,17 +51,59 @@ public class ActionService {
         }
     }
 
-    private Map<String, String[]> convertFilters(Map<String, String> filters) {
+    private Map<String, Object> resolveData(Map<String, Object> data, Map<String, Map<String, Object>> results) {
+        if (data == null) return new HashMap<>();
+        Map<String, Object> resolved = new HashMap<>();
+        data.forEach((k, v) -> {
+            if (v instanceof String s && s.startsWith("{{") && s.endsWith("}}")) {
+                resolved.put(k, resolveReference(s, results));
+            } else {
+                resolved.put(k, v);
+            }
+        });
+        return resolved;
+    }
+
+    private Map<String, String[]> resolveFilters(Map<String, String> filters, Map<String, Map<String, Object>> results) {
         if (filters == null) return Collections.emptyMap();
         Map<String, String[]> result = new HashMap<>();
-        filters.forEach((k, v) -> result.put(k, new String[]{v}));
+        filters.forEach((k, v) -> {
+            if (v.contains("{{") && v.contains("}}")) {
+                // e.g., "eq.{{new_user.id}}"
+                String resolvedVal = v;
+                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\{\\{([^}]+)\\}\\}");
+                java.util.regex.Matcher matcher = pattern.matcher(v);
+                StringBuilder sb = new StringBuilder();
+                while (matcher.find()) {
+                    String ref = matcher.group(1);
+                    Object val = resolveReference("{{" + ref + "}}", results);
+                    matcher.appendReplacement(sb, val != null ? val.toString() : "");
+                }
+                matcher.appendTail(sb);
+                result.put(k, new String[]{sb.toString()});
+            } else {
+                result.put(k, new String[]{v});
+            }
+        });
         return result;
     }
 
-    private void checkPreCondition(ActionOperation op, String userId, String projectRef, String companyId, String tenantId) {
+    private Object resolveReference(String refExpr, Map<String, Map<String, Object>> results) {
+        // refExpr: "{{step_ref.column_name}}"
+        String inner = refExpr.substring(2, refExpr.length() - 2);
+        String[] parts = inner.split("\\.", 2);
+        if (parts.length != 2) return refExpr;
+
+        Map<String, Object> stepResult = results.get(parts[0]);
+        if (stepResult == null) return refExpr;
+
+        return stepResult.getOrDefault(parts[1], refExpr);
+    }
+
+    private void checkPreCondition(ActionOperation op, String userId, String projectRef, String companyId, String tenantId, Map<String, Map<String, Object>> results) {
         String table = op.getTable();
         String condition = op.getCondition(); // e.g. "balance >= 100"
-        Map<String, String> filters = op.getFilters();
+        Map<String, String[]> filters = resolveFilters(op.getFilters(), results);
 
         // We'll reuse the select logic but wrap it to check the condition
         // Actually, it might be better to build a custom query for pre-condition
@@ -67,15 +120,17 @@ public class ActionService {
 
         // Add filters (reuse logic or simplify)
         if (filters != null) {
-            filters.forEach((key, val) -> {
-                if (val.contains(".")) {
-                    String[] parts = val.split("\\.", 2);
-                    String operator = parts[0];
-                    String value = parts[1];
-                    String sqlOp = getSqlOperator(operator);
-                    String paramName = "pc_" + key + "_" + System.nanoTime();
-                    whereClauses.add(key + " " + sqlOp + " :" + paramName);
-                    sqlParams.put(paramName, parseValue(value));
+            filters.forEach((key, vals) -> {
+                for (String val : vals) {
+                    if (val.contains(".")) {
+                        String[] parts = val.split("\\.", 2);
+                        String operator = parts[0];
+                        String value = parts[1];
+                        String sqlOp = getSqlOperator(operator);
+                        String paramName = "pc_" + key + "_" + System.nanoTime();
+                        whereClauses.add(key + " " + sqlOp + " :" + paramName);
+                        sqlParams.put(paramName, parseValue(value));
+                    }
                 }
             });
         }

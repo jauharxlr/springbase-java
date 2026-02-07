@@ -7,8 +7,13 @@ import com.jauharxlr.springbase.auth.entity.User;
 import com.jauharxlr.springbase.auth.repository.UserRepository;
 import com.jauharxlr.springbase.common.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -17,8 +22,10 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final JdbcTemplate jdbcTemplate;
 
     public AuthResponse signup(SignupRequest request) {
+        // ... (rest of signup)
         if (userRepository.findByEmailAndProjectRef(request.getEmail(), request.getProjectRef()).isPresent()) {
             throw new RuntimeException("Email already registered in this project");
         }
@@ -63,7 +70,24 @@ public class AuthService {
             throw new RuntimeException("Invalid password");
         }
 
-        String token = jwtUtils.generateToken(user.getId(), user.getProjectRef(), user.getRole(), user.getCompanyId(), user.getTenantId());
+        UUID companyId = user.getCompanyId();
+        if (companyId == null) {
+            try {
+                List<Map<String, Object>> list = jdbcTemplate.queryForList(
+                    "SELECT company_id FROM company_members WHERE user_id = ?", user.getId());
+                if (!list.isEmpty()) {
+                    companyId = (UUID) list.get(0).get("company_id");
+                    // Sync back to user record for next time
+                    user.setCompanyId(companyId);
+                    user.setTenantId(companyId);
+                    userRepository.save(user);
+                }
+            } catch (Exception e) {
+                // Table doesn't exist yet or other error
+            }
+        }
+
+        String token = jwtUtils.generateToken(user.getId(), user.getProjectRef(), user.getRole(), companyId, companyId);
         return AuthResponse.builder()
                 .accessToken(token)
                 .tokenType("Bearer")

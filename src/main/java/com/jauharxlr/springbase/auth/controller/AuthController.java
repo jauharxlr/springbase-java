@@ -38,7 +38,11 @@ public class AuthController {
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> signup(@RequestBody SignupRequest request) {
+    public ResponseEntity<AuthResponse> signup(@RequestBody SignupRequest request, jakarta.servlet.http.HttpServletRequest httpRequest) {
+        String projectRef = (String) httpRequest.getAttribute("project_ref");
+        if (request.getProjectRef() == null || request.getProjectRef().isBlank()) {
+            request.setProjectRef(projectRef != null ? projectRef : "default");
+        }
         return ResponseEntity.ok(authService.signup(request));
     }
 
@@ -59,7 +63,11 @@ public class AuthController {
                      content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request, jakarta.servlet.http.HttpServletRequest httpRequest) {
+        String projectRef = (String) httpRequest.getAttribute("project_ref");
+        if (request.getProjectRef() == null || request.getProjectRef().isBlank()) {
+            request.setProjectRef(projectRef != null ? projectRef : "default");
+        }
         return ResponseEntity.ok(authService.login(request));
     }
 }
