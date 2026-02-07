@@ -27,9 +27,9 @@ public class ActionService {
                 log.info("Executing action step {}: {} on table {}", step, op.getOp(), op.getTable());
                 
                 switch (op.getOp().toUpperCase()) {
-                    case "INSERT" -> dynamicDbService.insert(op.getTable(), userId, op.getData());
-                    case "UPDATE" -> dynamicDbService.update(op.getTable(), userId, convertFilters(op.getFilters()), op.getData());
-                    case "DELETE" -> dynamicDbService.delete(op.getTable(), userId, convertFilters(op.getFilters()));
+                    case "INSERT" -> dynamicDbService.insert(op.getTable(), projectRef, userId, op.getData());
+                    case "UPDATE" -> dynamicDbService.update(op.getTable(), projectRef, userId, convertFilters(op.getFilters()), op.getData());
+                    case "DELETE" -> dynamicDbService.delete(op.getTable(), projectRef, userId, convertFilters(op.getFilters()));
                     case "PRE_CONDITION" -> checkPreCondition(op, userId, projectRef);
                     default -> throw new IllegalArgumentException("Unsupported operation: " + op.getOp());
                 }
