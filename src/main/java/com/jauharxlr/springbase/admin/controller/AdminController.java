@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin/v1")
@@ -45,6 +46,11 @@ public class AdminController {
     public ResponseEntity<Object> executeSql(@RequestBody SqlRequest request) {
         dynamicDbService.executeRawSql(request.getSql());
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/query")
+    public ResponseEntity<List<Map<String, Object>>> querySql(@RequestBody SqlRequest request) {
+        return ResponseEntity.ok(dynamicDbService.queryRawSql(request.getSql()));
     }
 
     @Operation(

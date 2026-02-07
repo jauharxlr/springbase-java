@@ -89,6 +89,11 @@ public class ActionService {
             // But for now I'll just check common ones
             if (hasColumn(table, "user_id")) policyClauses.add("user_id = :auth_uid");
             if (hasColumn(table, "owner_id")) policyClauses.add("owner_id = :auth_uid");
+            if (hasColumn(table, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
+            if (hasColumn(table, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
+            if (hasColumn(table, "client_id")) policyClauses.add("client_id = :auth_uid");
+            if (hasColumn(table, "company_id")) policyClauses.add("company_id = :auth_uid");
+            if (hasColumn(table, "tenant_id")) policyClauses.add("tenant_id = :auth_uid");
             
             if (!policyClauses.isEmpty()) {
                 whereClauses.add("(" + String.join(" OR ", policyClauses) + ")");

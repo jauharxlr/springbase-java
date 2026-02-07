@@ -42,6 +42,8 @@ public class DynamicDbService {
                     if (hasColumn(tableName, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
                     if (hasColumn(tableName, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
                     if (hasColumn(tableName, "client_id")) policyClauses.add("client_id = :auth_uid");
+                    if (hasColumn(tableName, "company_id")) policyClauses.add("company_id = :auth_uid");
+                    if (hasColumn(tableName, "tenant_id")) policyClauses.add("tenant_id = :auth_uid");
                 } catch (IllegalArgumentException e) {
                     log.warn("Invalid UUID for userId: {}", userId);
                 }
@@ -51,13 +53,6 @@ public class DynamicDbService {
                 conditions.add("(" + String.join(" OR ", policyClauses) + ")");
             } else if (isAnon && !isPublic) {
                 conditions.add("1=0"); // Restricted access
-            } else if (!isAnon && !hasAnySecurityColumn(tableName)) {
-                // If no security columns exist, we allow access (or maybe we should restrict?)
-                // Default behavior for tables without user_id was full access in previous version.
-            } else if (!isAnon) {
-                // User is logged in, security columns exist, but none matched? 
-                // The OR logic above handles this if policyClauses is not empty.
-                // If policyClauses IS empty but security columns exist, it means userId was null/invalid.
             }
         }
 
@@ -97,7 +92,9 @@ public class DynamicDbService {
                hasColumn(tableName, "owner_id") || 
                hasColumn(tableName, "shared_with_id") || 
                hasColumn(tableName, "merchant_id") ||
-               hasColumn(tableName, "client_id");
+               hasColumn(tableName, "client_id") ||
+               hasColumn(tableName, "company_id") ||
+               hasColumn(tableName, "tenant_id");
     }
 
     public void insert(String tableName, String projectRef, String userId, Map<String, Object> data) {
@@ -109,6 +106,10 @@ public class DynamicDbService {
                     data.put("user_id", authUid);
                 } else if (hasColumn(tableName, "owner_id")) {
                     data.put("owner_id", authUid);
+                } else if (hasColumn(tableName, "company_id")) {
+                    data.put("company_id", authUid);
+                } else if (hasColumn(tableName, "tenant_id")) {
+                    data.put("tenant_id", authUid);
                 }
             } catch (IllegalArgumentException e) {
                 log.warn("Invalid UUID for userId: {}", userId);
@@ -127,8 +128,12 @@ public class DynamicDbService {
 
     private boolean hasColumn(String tableName, String columnName) {
         try {
-            String sql = "SELECT count(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = :t AND COLUMN_NAME = :c";
-            Integer count = jdbcTemplate.queryForObject(sql, Map.of("t", tableName.toLowerCase(), "c", columnName.toLowerCase()), Integer.class);
+            String sql = "SELECT count(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = UPPER(:t) AND COLUMN_NAME = UPPER(:c)";
+            Integer count = jdbcTemplate.queryForObject(sql, Map.of("t", tableName, "c", columnName), Integer.class);
+            if (count != null && count > 0) return true;
+            
+            sql = "SELECT count(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = LOWER(:t) AND COLUMN_NAME = LOWER(:c)";
+            count = jdbcTemplate.queryForObject(sql, Map.of("t", tableName, "c", columnName), Integer.class);
             return count != null && count > 0;
         } catch (Exception e) {
             return false;
@@ -147,8 +152,7 @@ public class DynamicDbService {
         sql.append(String.join(", ", sets));
 
         List<String> conditions = new ArrayList<>();
-        // Policy logic for update (same as select but usually more restrictive, 
-        // here we use the same Smart-Policy logic)
+        // Policy logic for update
         if (userId != null && !"anonymous".equals(userId)) {
             try {
                 UUID authUid = UUID.fromString(userId);
@@ -160,6 +164,8 @@ public class DynamicDbService {
                 if (hasColumn(tableName, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
                 if (hasColumn(tableName, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
                 if (hasColumn(tableName, "client_id")) policyClauses.add("client_id = :auth_uid");
+                if (hasColumn(tableName, "company_id")) policyClauses.add("company_id = :auth_uid");
+                if (hasColumn(tableName, "tenant_id")) policyClauses.add("tenant_id = :auth_uid");
                 
                 if (!policyClauses.isEmpty()) {
                     conditions.add("(" + String.join(" OR ", policyClauses) + ")");
@@ -216,6 +222,8 @@ public class DynamicDbService {
                 if (hasColumn(tableName, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
                 if (hasColumn(tableName, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
                 if (hasColumn(tableName, "client_id")) policyClauses.add("client_id = :auth_uid");
+                if (hasColumn(tableName, "company_id")) policyClauses.add("company_id = :auth_uid");
+                if (hasColumn(tableName, "tenant_id")) policyClauses.add("tenant_id = :auth_uid");
                 
                 if (!policyClauses.isEmpty()) {
                     conditions.add("(" + String.join(" OR ", policyClauses) + ")");
@@ -277,7 +285,7 @@ public class DynamicDbService {
     }
     
     public List<String> getTables() {
-        String sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'PUBLIC' AND TABLE_TYPE = 'TABLE'";
+        String sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA IN ('PUBLIC', 'public') AND TABLE_TYPE IN ('TABLE', 'BASE TABLE', 'VIEW')";
         return jdbcTemplate.queryForList(sql, Map.of(), String.class);
     }
 
@@ -324,5 +332,9 @@ public class DynamicDbService {
 
     public void executeRawSql(String sql) {
         jdbcTemplate.getJdbcTemplate().execute(sql);
+    }
+
+    public List<Map<String, Object>> queryRawSql(String sql) {
+        return jdbcTemplate.queryForList(sql, new HashMap<>());
     }
 }
