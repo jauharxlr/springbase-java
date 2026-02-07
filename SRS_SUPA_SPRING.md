@@ -19,8 +19,16 @@ This document defines the technical specifications for **SupaSpring**, a Spring 
     *   `sub`: User UUID
     *   `project_ref`: The project this user belongs to
     *   `role`: Either `anon`, `authenticated`, or `service_role`.
+    *   `user_metadata`: Optional JSON object for user-controlled profile data.
+    *   `app_metadata`: Optional JSON object for application-controlled data (e.g., roles, permissions).
 
-#### 2.2 Dynamic Database Engine (Auto-CRUD)
+#### 2.2 Application-Level Auth (B2B2C Support)
+To enable SpringBase tenants to act as identity providers for their own end-users, the following features are supported:
+*   **2.2.1 Multi-Tenant User Pools**: All users registered with a specific `project_ref` are isolated to that tenant.
+*   **2.2.2 Custom Claims & Metadata**: Tenants can store end-user specific data (e.g., `member_type: 'gold'`) in `app_metadata`, which is automatically included in the JWT for use in application logic.
+*   **2.2.3 Admin User Management API**: Tenants (using their `service_role` key) can manage their user pool programmatically via the `/auth/v1/admin/users` endpoints.
+
+#### 2.3 Dynamic Database Engine (Auto-CRUD)
 *   **2.2.1 Schema Definition API**:
     *   Endpoints to create/alter tables via JSON payloads.
     *   SupaSpring maintains a internal metadata catalog to track which columns exist in user-defined tables.

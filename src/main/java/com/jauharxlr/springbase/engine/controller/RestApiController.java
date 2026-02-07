@@ -112,10 +112,12 @@ public class RestApiController {
     @PostMapping("/{table}")
     public ResponseEntity<Void> post(
             @PathVariable String table,
+            HttpServletRequest request,
             @RequestBody @Schema(example = "{\"title\": \"Finish homework\", \"completed\": false}") Map<String, Object> data) {
         
         String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        dynamicDbService.insert(table, userId, data);
+        String projectRef = (String) request.getAttribute("project_ref");
+        dynamicDbService.insert(table, projectRef, userId, data);
         return ResponseEntity.status(201).build();
     }
 
@@ -126,7 +128,8 @@ public class RestApiController {
             @RequestBody Map<String, Object> data) {
         
         String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        dynamicDbService.update(table, userId, request.getParameterMap(), data);
+        String projectRef = (String) request.getAttribute("project_ref");
+        dynamicDbService.update(table, projectRef, userId, request.getParameterMap(), data);
         return ResponseEntity.ok().build();
     }
 
@@ -136,7 +139,8 @@ public class RestApiController {
             HttpServletRequest request) {
         
         String userId = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        dynamicDbService.delete(table, userId, request.getParameterMap());
+        String projectRef = (String) request.getAttribute("project_ref");
+        dynamicDbService.delete(table, projectRef, userId, request.getParameterMap());
         return ResponseEntity.ok().build();
     }
 }

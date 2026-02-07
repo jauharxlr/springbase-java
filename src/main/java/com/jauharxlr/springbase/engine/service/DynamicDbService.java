@@ -17,6 +17,7 @@ public class DynamicDbService {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final TableMetadataRepository tableMetadataRepository;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     public List<Map<String, Object>> select(String tableName, String projectRef, String userId, Map<String, String[]> params) {
         StringBuilder sql = new StringBuilder("SELECT * FROM ").append(tableName);
@@ -99,14 +100,18 @@ public class DynamicDbService {
                hasColumn(tableName, "client_id");
     }
 
-    public void insert(String tableName, String userId, Map<String, Object> data) {
+    public void insert(String tableName, String projectRef, String userId, Map<String, Object> data) {
         // Ownership injection for insert
         if (userId != null && !"anonymous".equals(userId)) {
-            UUID authUid = UUID.fromString(userId);
-            if (hasColumn(tableName, "user_id")) {
-                data.put("user_id", authUid);
-            } else if (hasColumn(tableName, "owner_id")) {
-                data.put("owner_id", authUid);
+            try {
+                UUID authUid = UUID.fromString(userId);
+                if (hasColumn(tableName, "user_id")) {
+                    data.put("user_id", authUid);
+                } else if (hasColumn(tableName, "owner_id")) {
+                    data.put("owner_id", authUid);
+                }
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid UUID for userId: {}", userId);
             }
         }
 
@@ -115,6 +120,9 @@ public class DynamicDbService {
         String sql = "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + placeholders + ")";
         
         jdbcTemplate.update(sql, data);
+        
+        eventPublisher.publishEvent(new com.jauharxlr.springbase.engine.event.CrudEvent(
+                com.jauharxlr.springbase.engine.event.CrudEvent.EventType.ON_INSERT, tableName, projectRef, userId, data));
     }
 
     private boolean hasColumn(String tableName, String columnName) {
@@ -127,7 +135,7 @@ public class DynamicDbService {
         }
     }
 
-    public void update(String tableName, String userId, Map<String, String[]> params, Map<String, Object> data) {
+    public void update(String tableName, String projectRef, String userId, Map<String, String[]> params, Map<String, Object> data) {
         StringBuilder sql = new StringBuilder("UPDATE ").append(tableName).append(" SET ");
         Map<String, Object> sqlParams = new HashMap<>();
         
@@ -142,18 +150,23 @@ public class DynamicDbService {
         // Policy logic for update (same as select but usually more restrictive, 
         // here we use the same Smart-Policy logic)
         if (userId != null && !"anonymous".equals(userId)) {
-            UUID authUid = UUID.fromString(userId);
-            sqlParams.put("auth_uid", authUid);
-            
-            List<String> policyClauses = new ArrayList<>();
-            if (hasColumn(tableName, "user_id")) policyClauses.add("user_id = :auth_uid");
-            if (hasColumn(tableName, "owner_id")) policyClauses.add("owner_id = :auth_uid");
-            if (hasColumn(tableName, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
-            if (hasColumn(tableName, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
-            if (hasColumn(tableName, "client_id")) policyClauses.add("client_id = :auth_uid");
-            
-            if (!policyClauses.isEmpty()) {
-                conditions.add("(" + String.join(" OR ", policyClauses) + ")");
+            try {
+                UUID authUid = UUID.fromString(userId);
+                sqlParams.put("auth_uid", authUid);
+                
+                List<String> policyClauses = new ArrayList<>();
+                if (hasColumn(tableName, "user_id")) policyClauses.add("user_id = :auth_uid");
+                if (hasColumn(tableName, "owner_id")) policyClauses.add("owner_id = :auth_uid");
+                if (hasColumn(tableName, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
+                if (hasColumn(tableName, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
+                if (hasColumn(tableName, "client_id")) policyClauses.add("client_id = :auth_uid");
+                
+                if (!policyClauses.isEmpty()) {
+                    conditions.add("(" + String.join(" OR ", policyClauses) + ")");
+                }
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid UUID for userId: {}", userId);
+                conditions.add("1=0");
             }
         } else {
             conditions.add("1=0"); // Anon cannot update
@@ -181,27 +194,35 @@ public class DynamicDbService {
         }
 
         jdbcTemplate.update(sql.toString(), sqlParams);
+
+        eventPublisher.publishEvent(new com.jauharxlr.springbase.engine.event.CrudEvent(
+                com.jauharxlr.springbase.engine.event.CrudEvent.EventType.ON_UPDATE, tableName, projectRef, userId, data));
     }
 
-    public void delete(String tableName, String userId, Map<String, String[]> params) {
+    public void delete(String tableName, String projectRef, String userId, Map<String, String[]> params) {
         StringBuilder sql = new StringBuilder("DELETE FROM ").append(tableName);
         Map<String, Object> sqlParams = new HashMap<>();
         
         List<String> conditions = new ArrayList<>();
         // Policy logic for delete
         if (userId != null && !"anonymous".equals(userId)) {
-            UUID authUid = UUID.fromString(userId);
-            sqlParams.put("auth_uid", authUid);
-            
-            List<String> policyClauses = new ArrayList<>();
-            if (hasColumn(tableName, "user_id")) policyClauses.add("user_id = :auth_uid");
-            if (hasColumn(tableName, "owner_id")) policyClauses.add("owner_id = :auth_uid");
-            if (hasColumn(tableName, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
-            if (hasColumn(tableName, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
-            if (hasColumn(tableName, "client_id")) policyClauses.add("client_id = :auth_uid");
-            
-            if (!policyClauses.isEmpty()) {
-                conditions.add("(" + String.join(" OR ", policyClauses) + ")");
+            try {
+                UUID authUid = UUID.fromString(userId);
+                sqlParams.put("auth_uid", authUid);
+                
+                List<String> policyClauses = new ArrayList<>();
+                if (hasColumn(tableName, "user_id")) policyClauses.add("user_id = :auth_uid");
+                if (hasColumn(tableName, "owner_id")) policyClauses.add("owner_id = :auth_uid");
+                if (hasColumn(tableName, "shared_with_id")) policyClauses.add("shared_with_id = :auth_uid");
+                if (hasColumn(tableName, "merchant_id")) policyClauses.add("merchant_id = :auth_uid");
+                if (hasColumn(tableName, "client_id")) policyClauses.add("client_id = :auth_uid");
+                
+                if (!policyClauses.isEmpty()) {
+                    conditions.add("(" + String.join(" OR ", policyClauses) + ")");
+                }
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid UUID for userId: {}", userId);
+                conditions.add("1=0");
             }
         } else {
             conditions.add("1=0"); // Anon cannot delete
@@ -227,6 +248,9 @@ public class DynamicDbService {
         }
 
         jdbcTemplate.update(sql.toString(), sqlParams);
+
+        eventPublisher.publishEvent(new com.jauharxlr.springbase.engine.event.CrudEvent(
+                com.jauharxlr.springbase.engine.event.CrudEvent.EventType.ON_DELETE, tableName, projectRef, userId, Map.of()));
     }
 
     private String getSqlOperator(String op) {

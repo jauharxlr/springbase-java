@@ -232,6 +232,9 @@
                 <button onclick="showSection('actions')" id="nav-actions" class="sidebar-item w-full flex items-center px-4 py-2.5 text-sm text-slate-600 rounded-xl font-semibold">
                     <i class="fas fa-layer-group w-5 opacity-70"></i> Atomic Actions
                 </button>
+                <button onclick="showSection('automations')" id="nav-automations" class="sidebar-item w-full flex items-center px-4 py-2.5 text-sm text-slate-600 rounded-xl font-semibold">
+                    <i class="fas fa-robot w-5 opacity-70"></i> Automations
+                </button>
                 <button onclick="showSection('storage')" id="nav-storage" class="sidebar-item w-full flex items-center px-4 py-2.5 text-sm text-slate-600 rounded-xl font-semibold">
                     <i class="fas fa-box w-5 opacity-70"></i> Storage
                 </button>
@@ -472,6 +475,73 @@
                         <div id="action-result" class="hidden bg-slate-50 rounded-3xl border border-slate-100 p-6">
                             <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Execution Result</h3>
                             <div id="action-status" class="text-xs font-mono p-3 bg-white rounded-xl border border-slate-100 shadow-sm"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Automations Section -->
+            <section id="sec-automations" class="section hidden space-y-6 fade-in">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-2xl font-extrabold tracking-tight text-slate-900">Visual Automations</h2>
+                        <p class="text-slate-500 text-sm">Create rules to trigger actions on data changes. Built-in Zapier for your backend.</p>
+                    </div>
+                    <button onclick="refreshAutomations()" class="bg-white border border-slate-200 px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-50 transition flex items-center text-xs font-bold shadow-sm">
+                        <i class="fas fa-sync-alt mr-2 text-indigo-500"></i> Refresh
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Create Rule Form -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                            <h3 class="text-xs font-bold text-slate-900 uppercase tracking-widest mb-2">New Automation</h3>
+                            
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">When Table...</label>
+                                <input type="text" id="auto-table" placeholder="e.g. orders" class="w-full rounded-xl border-slate-200 bg-white px-4 py-2.5 text-xs font-bold focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">On Event...</label>
+                                <select id="auto-event" class="w-full rounded-xl border-slate-200 bg-white px-4 py-2.5 text-xs font-bold focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                                    <option value="ON_INSERT">Inserted</option>
+                                    <option value="ON_UPDATE">Updated</option>
+                                    <option value="ON_DELETE">Deleted</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Perform Action...</label>
+                                <select id="auto-type" onchange="toggleAutoConfig(this.value)" class="w-full rounded-xl border-slate-200 bg-white px-4 py-2.5 text-xs font-bold focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                                    <option value="WEBHOOK">Call Webhook</option>
+                                    <option value="DB_ACTION">Trigger Atomic Action</option>
+                                </select>
+                            </div>
+
+                            <div id="auto-config-webhook">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Webhook URL</label>
+                                <input type="text" id="auto-url" placeholder="https://hooks.zapier.com/..." class="w-full rounded-xl border-slate-200 bg-white px-4 py-2.5 text-xs font-bold focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                            </div>
+
+                            <div id="auto-config-db" class="hidden">
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">Action JSON (Array of Operations)</label>
+                                <textarea id="auto-json" placeholder='[{"op": "UPDATE", "table": "inventory", "data": {"qty": -1}, "filters": {"sku": "eq.ITEM-01"}}]' class="w-full h-32 rounded-xl border-slate-200 bg-white p-4 text-[10px] font-mono focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"></textarea>
+                            </div>
+
+                            <button onclick="handleCreateAutomation()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold text-xs hover:bg-indigo-500 transition shadow-lg shadow-indigo-600/10 btn-hover-effect">
+                                Create Automation Rule
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Rules List -->
+                    <div class="lg:col-span-2 space-y-4">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest px-2">Active Rules</h3>
+                        <div id="automations-list" class="space-y-3">
+                            <!-- Rules injected here -->
+                            <div class="p-10 text-center text-slate-400 italic text-xs">No automation rules configured.</div>
                         </div>
                     </div>
                 </div>
@@ -1266,7 +1336,90 @@ GET /rest/v1/orders
             originalShowSection(name);
             if (name === 'storage') refreshBuckets();
             if (name === 'actions') updateActionPreview();
+            if (name === 'automations') refreshAutomations();
         };
+
+        // Automations Logic
+        async function refreshAutomations() {
+            try {
+                const res = await apiFetch('/rest/v1/automations');
+                if (!res) return;
+                const rules = await res.json();
+                const list = document.getElementById('automations-list');
+                list.innerHTML = '';
+
+                if (rules.length === 0) {
+                    list.innerHTML = '<div class="p-10 text-center text-slate-400 italic text-xs">No automation rules configured.</div>';
+                    return;
+                }
+
+                rules.forEach(rule => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex justify-between items-center group hover:border-indigo-200 transition-all';
+                    div.innerHTML = `
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 rounded-2xl ${rule.actionType === 'WEBHOOK' ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'} flex items-center justify-center">
+                                <i class="fas ${rule.actionType === 'WEBHOOK' ? 'fa-link' : 'fa-database'}"></i>
+                            </div>
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${rule.tableName}</span>
+                                    <span class="text-[8px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold">${rule.event}</span>
+                                </div>
+                                <h4 class="text-xs font-bold text-slate-900">${rule.actionType === 'WEBHOOK' ? 'Post to Webhook' : 'Execute Action Chain'}</h4>
+                                <p class="text-[10px] text-slate-500 truncate max-w-xs">${rule.configuration}</p>
+                            </div>
+                        </div>
+                        <button onclick="deleteAutomation(${rule.id})" class="text-slate-300 hover:text-red-500 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i class="fas fa-trash-alt text-xs"></i>
+                        </button>
+                    `;
+                    list.appendChild(div);
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        function toggleAutoConfig(type) {
+            document.getElementById('auto-config-webhook').classList.toggle('hidden', type !== 'WEBHOOK');
+            document.getElementById('auto-config-db').classList.toggle('hidden', type !== 'DB_ACTION');
+        }
+
+        async function handleCreateAutomation() {
+            const tableName = document.getElementById('auto-table').value;
+            const event = document.getElementById('auto-event').value;
+            const actionType = document.getElementById('auto-type').value;
+            const configuration = actionType === 'WEBHOOK' ? document.getElementById('auto-url').value : document.getElementById('auto-json').value;
+
+            if (!tableName || !configuration) return alert('Table and Configuration required');
+
+            try {
+                const res = await apiFetch('/rest/v1/automations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tableName, event, actionType, configuration })
+                });
+
+                if (res && res.ok) {
+                    showToast('Automation rule created');
+                    refreshAutomations();
+                    // Reset form
+                    document.getElementById('auto-table').value = '';
+                    document.getElementById('auto-url').value = '';
+                    document.getElementById('auto-json').value = '';
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function deleteAutomation(id) {
+            if (!confirm('Delete this rule?')) return;
+            try {
+                const res = await apiFetch(`/rest/v1/automations/${id}`, { method: 'DELETE' });
+                if (res && res.ok) {
+                    showToast('Rule removed');
+                    refreshAutomations();
+                }
+            } catch (err) { console.error(err); }
+        }
 
         // Atomic Actions Logic
         let actionSteps = [];
