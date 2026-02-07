@@ -2,17 +2,34 @@
 
 SupaSpring is a high-performance, open-source alternative to Supabase, built entirely using the latest Spring Boot (Java) ecosystem.
 
-## Project Status
+## Features Showcase
 
-- [x] Project Initialization (Spring Boot 3.5.10, Java 21)
-- [x] Auth Module (Email/Password, JWT, Multi-tenancy)
-- [x] Dynamic DB Engine (Auto-CRUD)
-- [x] Smart-Policy Security & Stakeholder Columns
-- [x] AI-First Workflow (SupaShell & JSON-to-DDL)
+*   **⚡ Instant REST APIs**: Automatically generate CRUD endpoints for any table with zero code.
+*   **🔒 Smart-Policy Security**: Row-level security that just works. No complex SQL policies required.
+*   **⛓️ Atomic Action Engine**: Execute complex multi-step workflows in a single ACID-compliant transaction.
+*   **📦 Object Storage**: S3-compatible storage with project-level isolation and stakeholder-based access.
+*   **🛠️ SupaShell Console**: A built-in SQL terminal for advanced migrations and data exploration.
+*   **🎨 Premium Dashboard**: A sleek, high-density interface for managing your entire backend.
 
-## Smart-Policy Security
+## Atomic Actions
 
-SpringBase features a built-in **Smart-Policy** engine that automatically applies Row-Level Security (RLS) based on specific column names. When a table contains any of the following "Stakeholder Columns", the engine automatically filters queries so that users can only see records where they are a stakeholder.
+The **Atomic Action Engine** is a core capability of SpringBase that allows developers to group multiple database operations into a single transaction. This ensures that either all operations succeed or none of them do, preventing partial data updates.
+
+### Why use Atomic Actions?
+- **Financial Transfers**: Ensure money is deducted from one account and added to another simultaneously.
+- **Order Processing**: Reduce inventory stock and create an order record in one go.
+- **Complex Updates**: Update multiple related tables while maintaining referential integrity.
+
+Access it via `POST /rest/v1/actions/execute`.
+
+## Multi-party Stakeholder Security
+
+SpringBase features a built-in **Smart-Policy** engine that automatically applies Row-Level Security (RLS) based on specific column names. This enables complex multi-party workflows without writing any security rules.
+
+### Industry Examples
+*   **Healthcare (Doctor/Patient)**: A record with `user_id` (Patient) and `merchant_id` (Doctor) is automatically visible to both parties, but invisible to other patients or doctors.
+*   **Ride-Hailing (Driver/Rider)**: A `ride` record containing `client_id` (Rider) and `owner_id` (Driver) ensures both can track the trip status securely.
+*   **Marketplaces (Seller/Buyer)**: An `order` with `customer_id` and `vendor_id` allows both to manage the transaction.
 
 ### Stakeholder Columns
 - `user_id`: The primary owner of the record.
@@ -22,14 +39,15 @@ SpringBase features a built-in **Smart-Policy** engine that automatically applie
 - `shared_with_id`: An additional collaborator who has access.
 
 The engine uses an `OR` logic: `WHERE user_id = :uid OR owner_id = :uid OR ...`. 
-General ID columns like `product_id` or `category_id` are **ignored** by the security engine to prevent false-positive filters, ensuring that global resources remain accessible.
+General ID columns like `product_id` or `category_id` are **ignored** by the security engine to prevent false-positive filters.
 
-## Public (Read-Only) Access
+## Documentation
 
-Tables can be marked as **Public (Read-Only)** in the Dashboard or via the Schema Editor. When enabled:
-- Anonymous users (using the `anon` key) can read all data from the table.
-- Ownership-based security filters are bypassed for read operations.
-- Write operations (Insert/Update/Delete) still require authentication and follow ownership rules.
+- [**SDK Guide (Dashboard)**](src/main/resources/static/index.html) - Interactive guide built into the app.
+- [**Interactive API Docs (Swagger)**](http://localhost:1890/swagger-ui.html) - Full OpenAPI specification.
+- [BRD](BRD_SUPA_SPRING.md)
+- [SRS](SRS_SUPA_SPRING.md)
+- [Platform Comparison (Springbase vs. Supabase)](PLATFORM_COMPARISON.md)
 
 ## Technical Specifications
 
@@ -37,22 +55,3 @@ Tables can be marked as **Public (Read-Only)** in the Dashboard or via the Schem
 - **Database**: H2 (Postgres Mode)
 - **Cache**: Caffeine
 - **Port**: 1890
-
-## Dashboard
-
-- **Web Dashboard**: A no-code-friendly visual interface is available at the root URL: `http://localhost:1890/`.
-  - **Landing Page**: Overview and links to documentation.
-  - **Authentication**: Easy login and signup.
-  - **Table Browser**: View and manage your data visually.
-  - **Table Creator**: Define new tables without writing SQL.
-  - **SQL Console**: Run raw SQL queries via SupaShell.
-
-## Documentation
-
-- [BRD](BRD_SUPA_SPRING.md)
-- [SRS](SRS_SUPA_SPRING.md)
-- [Platform Comparison (Springbase vs. Supabase)](PLATFORM_COMPARISON.md)
-- **Interactive API Docs**: Enhanced Swagger (SpringDoc) UI is available at `http://localhost:1890/swagger-ui.html`. 
-  - Exhaustive details for Auth, Dynamic DB, and Admin APIs.
-  - Comprehensive parameter, response, and error code (400, 401, 403, 404, 500) documentation.
-  - Example payloads for AI-assisted schema generation and CRUD operations.
