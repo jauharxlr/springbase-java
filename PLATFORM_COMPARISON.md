@@ -8,12 +8,12 @@ This document provides a comparative audit of the current **Springbase** impleme
 | :--- | :--- | :--- | :--- |
 | **Database** | PostgreSQL | PostgreSQL (via JDBC) | ✅ Matched |
 | **Auto-CRUD API** | PostgREST | `RestApiController` | ✅ Matched |
-| **Auth** | GoTrue (OAuth, MFA, etc.) | Custom JWT Auth | ⚠️ Basic |
+| **Auth** | GoTrue (OAuth, etc.) | Custom JWT Auth | ⚠️ Basic |
 | **Security** | Database RLS | App-level "Smart-Policy" | 🔄 Emulated |
 | **SQL Editor** | Supabase Dashboard | SupaShell Admin API | ✅ Matched |
 | **Filtering** | Extensive (PostgREST) | Basic (eq, gt, like, etc.) | ⚠️ Partial |
 | **Realtime** | Realtime Server (Walrus) | Not implemented | ❌ Missing |
-| **Storage** | S3-compatible wrapper | Not implemented | ❌ Missing |
+| **Storage** | Object Storage | Not implemented | ❌ Missing |
 | **Edge Functions** | Deno-based | Not implemented | ❌ Missing |
 | **RPC** | `/rest/v1/rpc/...` | Not implemented | ❌ Missing |
 | **AI Workflows** | Supabase AI | JSON-to-DDL Engine | ✨ Unique |

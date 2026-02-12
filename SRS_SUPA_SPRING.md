@@ -45,9 +45,9 @@ This replaces complex RLS/RBAC with a convention-based system.
     *   **User Key (JWT)**: For logged-in users. Limited by ownership.
     *   **Service Role Key**: Super-user bypass. No filters applied.
 *   **2.3.2 Ownership Injection Logic**:
-    *   If the engine detects a column named `user_id` or `owner_id` in the target table:
-        *   **For `authenticated` role**: The engine MUST automatically append `AND user_id = auth.uid()` to every `SELECT`, `UPDATE`, and `DELETE` query.
-        *   **For `INSERT`**: The engine MUST automatically set the `user_id` column to the current user's UUID from the JWT.
+    *   If the engine detects a column named `user_id`, `owner_id`, `company_id`, or `tenant_id` in the target table:
+        *   **For `authenticated` role**: The engine MUST automatically append `AND (user_id = auth.uid() OR owner_id = auth.uid() OR company_id = auth.company() OR tenant_id = auth.tenant())` to every `SELECT`, `UPDATE`, and `DELETE` query (where columns exist).
+        *   **For `INSERT`**: The engine MUST automatically set the `user_id` column (if present) to the current user's UUID, and the `company_id`/`tenant_id` columns (if present) to the respective IDs from the JWT.
 *   **2.3.3 Public Read Toggle**:
     *   Metadata flag per table: `is_public_read`.
     *   If `true`, queries with the `anon` key are allowed for `SELECT` only.

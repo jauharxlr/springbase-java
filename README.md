@@ -7,7 +7,6 @@ SupaSpring is a high-performance, open-source alternative to Supabase, built ent
 *   **⚡ Instant REST APIs**: Automatically generate CRUD endpoints for any table with zero code.
 *   **🔒 Smart-Policy Security**: Row-level security that just works. No complex SQL policies required.
 *   **⛓️ Atomic Action Engine**: Execute complex multi-step workflows in a single ACID-compliant transaction.
-*   **📦 Object Storage**: S3-compatible storage with project-level isolation and stakeholder-based access.
 *   **🛠️ SupaShell Console**: A built-in SQL terminal for advanced migrations and data exploration.
 *   **🎨 Premium Dashboard**: A sleek, high-density interface for managing your entire backend.
 

@@ -1,24 +1,24 @@
 [INFO] Scanning for projects...
-Downloading from central: https://repo.maven.apache.org/maven2/org/flywaydb/maven-metadata.xml
 Downloading from central: https://repo.maven.apache.org/maven2/org/cyclonedx/maven-metadata.xml
-Downloading from central: https://repo.maven.apache.org/maven2/io/github/git-commit-id/maven-metadata.xml
 Downloading from central: https://repo.maven.apache.org/maven2/org/springframework/boot/maven-metadata.xml
-Progress (1): 255 BProgress (2): 255 B | 234 BProgress (3): 255 B | 234 B | 243 BProgress (4): 255 B | 234 B | 243 B | 249 B                                           Downloaded from central: https://repo.maven.apache.org/maven2/org/flywaydb/maven-metadata.xml (234 B at 486 B/s)
-Downloaded from central: https://repo.maven.apache.org/maven2/org/cyclonedx/maven-metadata.xml (243 B at 503 B/s)
-Downloaded from central: https://repo.maven.apache.org/maven2/io/github/git-commit-id/maven-metadata.xml (255 B at 527 B/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/flywaydb/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/io/github/git-commit-id/maven-metadata.xml
+Progress (1): 249 BProgress (2): 249 B | 243 BProgress (3): 249 B | 243 B | 234 B                                   Downloaded from central: https://repo.maven.apache.org/maven2/org/cyclonedx/maven-metadata.xml (243 B at 304 B/s)
+Progress (3): 249 B | 234 B | 255 B                                   Downloaded from central: https://repo.maven.apache.org/maven2/org/springframework/boot/maven-metadata.xml (249 B at 312 B/s)
 Downloading from central: https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/maven-metadata.xml
-Downloading from central: https://repo.maven.apache.org/maven2/org/liquibase/maven-metadata.xml
 Downloading from central: https://repo.maven.apache.org/maven2/org/jooq/maven-metadata.xml
-Downloaded from central: https://repo.maven.apache.org/maven2/org/springframework/boot/maven-metadata.xml (249 B at 514 B/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/org/flywaydb/maven-metadata.xml (234 B at 292 B/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/liquibase/maven-metadata.xml
+Downloaded from central: https://repo.maven.apache.org/maven2/io/github/git-commit-id/maven-metadata.xml (255 B at 318 B/s)
 Downloading from central: https://repo.maven.apache.org/maven2/org/graalvm/buildtools/maven-metadata.xml
-Progress (1): 375 B                   Downloaded from central: https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/maven-metadata.xml (375 B at 21 kB/s)
+Progress (1): 375 B                   Downloaded from central: https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/maven-metadata.xml (375 B at 13 kB/s)
 Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml
-Progress (1): 398 B                   Downloaded from central: https://repo.maven.apache.org/maven2/org/jooq/maven-metadata.xml (398 B at 19 kB/s)
-Progress (1): 242 B                   Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml
-Downloaded from central: https://repo.maven.apache.org/maven2/org/graalvm/buildtools/maven-metadata.xml (242 B at 11 kB/s)
-Progress (1): 243 B                   Downloaded from central: https://repo.maven.apache.org/maven2/org/liquibase/maven-metadata.xml (243 B at 8.7 kB/s)
-Progress (1): 4.6 kBProgress (1): 10 kB Progress (1): 14 kB                   Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml (14 kB at 649 kB/s)
-Progress (1): 3.1 kBProgress (1): 8.0 kBProgress (1): 8.0 kBProgress (1): 13 kB Progress (1): 17 kBProgress (1): 20 kBProgress (1): 21 kB                   Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml (21 kB at 503 kB/s)
+Progress (1): 398 B                   Downloaded from central: https://repo.maven.apache.org/maven2/org/jooq/maven-metadata.xml (398 B at 11 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml
+Progress (1): 242 BProgress (2): 242 B | 243 B                           Downloaded from central: https://repo.maven.apache.org/maven2/org/liquibase/maven-metadata.xml (243 B at 6.4 kB/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/org/graalvm/buildtools/maven-metadata.xml (242 B at 6.4 kB/s)
+Progress (1): 4.6 kBProgress (1): 10 kB Progress (1): 14 kB                   Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml (14 kB at 446 kB/s)
+Progress (1): 3.1 kBProgress (1): 8.0 kBProgress (1): 8.0 kBProgress (1): 13 kB Progress (1): 17 kBProgress (1): 20 kBProgress (1): 21 kB                   Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml (21 kB at 350 kB/s)
 [INFO] 
 [INFO] ----------------------< com.jauharxlr:springbase >----------------------
 [INFO] Building springbase 0.0.1-SNAPSHOT
@@ -56,27 +56,27 @@ Progress (1): 3.1 kBProgress (1): 8.0 kBProgress (1): 8.0 kBProgress (1): 13 
 
  :: Spring Boot ::               (v3.5.10)
 
-2026-02-07T08:35:00.253Z  INFO 66102 --- [springbase] [           main] c.j.springbase.SpringbaseApplication     : Starting SpringbaseApplication using Java 21.0.10 with PID 66102 (/root/.openclaw/workspace/springbase/target/classes started by root in /root/.openclaw/workspace/springbase)
-2026-02-07T08:35:00.254Z DEBUG 66102 --- [springbase] [           main] c.j.springbase.SpringbaseApplication     : Running with Spring Boot v3.5.10, Spring v6.2.15
-2026-02-07T08:35:00.255Z  INFO 66102 --- [springbase] [           main] c.j.springbase.SpringbaseApplication     : No active profile set, falling back to 1 default profile: "default"
-2026-02-07T08:35:00.832Z  INFO 66102 --- [springbase] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-02-07T08:35:00.859Z  INFO 66102 --- [springbase] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 22 ms. Found 4 JPA repository interfaces.
-2026-02-07T08:35:01.100Z  INFO 66102 --- [springbase] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 1890 (http)
-2026-02-07T08:35:01.108Z  INFO 66102 --- [springbase] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-02-07T08:35:01.108Z  INFO 66102 --- [springbase] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.50]
-2026-02-07T08:35:01.130Z  INFO 66102 --- [springbase] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2026-02-07T08:35:01.131Z  INFO 66102 --- [springbase] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 849 ms
-2026-02-07T08:35:01.218Z DEBUG 66102 --- [springbase] [           main] c.j.s.c.s.JwtAuthenticationFilter        : Filter 'jwtAuthenticationFilter' configured for use
-2026-02-07T08:35:01.258Z  INFO 66102 --- [springbase] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2026-02-07T08:35:01.363Z  INFO 66102 --- [springbase] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:springbase user=SA
-2026-02-07T08:35:01.364Z  INFO 66102 --- [springbase] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-02-07T08:35:01.384Z  INFO 66102 --- [springbase] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-02-07T08:35:01.409Z  INFO 66102 --- [springbase] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.41.Final
-2026-02-07T08:35:01.422Z  INFO 66102 --- [springbase] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2026-02-07T08:35:01.524Z  INFO 66102 --- [springbase] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-02-07T08:35:01.543Z  WARN 66102 --- [springbase] [           main] org.hibernate.dialect.Dialect            : HHH000511: The 2.3.232 version for [org.hibernate.dialect.PostgreSQLDialect] is no longer supported, hence certain features may not work properly. The minimum supported version is 12.0.0. Check the community dialects project for available legacy versions.
-2026-02-07T08:35:01.546Z  WARN 66102 --- [springbase] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2026-02-07T08:35:01.556Z  INFO 66102 --- [springbase] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+2026-02-12T14:15:08.877Z  INFO 168197 --- [springbase] [           main] c.j.springbase.SpringbaseApplication     : Starting SpringbaseApplication using Java 21.0.10 with PID 168197 (/root/.openclaw/workspace/springbase/target/classes started by root in /root/.openclaw/workspace/springbase)
+2026-02-12T14:15:08.879Z DEBUG 168197 --- [springbase] [           main] c.j.springbase.SpringbaseApplication     : Running with Spring Boot v3.5.10, Spring v6.2.15
+2026-02-12T14:15:08.880Z  INFO 168197 --- [springbase] [           main] c.j.springbase.SpringbaseApplication     : No active profile set, falling back to 1 default profile: "default"
+2026-02-12T14:15:10.168Z  INFO 168197 --- [springbase] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-02-12T14:15:10.207Z  INFO 168197 --- [springbase] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 32 ms. Found 5 JPA repository interfaces.
+2026-02-12T14:15:10.553Z  INFO 168197 --- [springbase] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 1890 (http)
+2026-02-12T14:15:10.568Z  INFO 168197 --- [springbase] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-02-12T14:15:10.568Z  INFO 168197 --- [springbase] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.50]
+2026-02-12T14:15:10.603Z  INFO 168197 --- [springbase] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-02-12T14:15:10.604Z  INFO 168197 --- [springbase] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1681 ms
+2026-02-12T14:15:10.720Z DEBUG 168197 --- [springbase] [           main] c.j.s.c.s.JwtAuthenticationFilter        : Filter 'jwtAuthenticationFilter' configured for use
+2026-02-12T14:15:10.800Z  INFO 168197 --- [springbase] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-02-12T14:15:11.048Z  INFO 168197 --- [springbase] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:springbase user=SA
+2026-02-12T14:15:11.053Z  INFO 168197 --- [springbase] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-02-12T14:15:11.148Z  INFO 168197 --- [springbase] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-02-12T14:15:11.276Z  INFO 168197 --- [springbase] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.41.Final
+2026-02-12T14:15:11.378Z  INFO 168197 --- [springbase] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-02-12T14:15:11.649Z  INFO 168197 --- [springbase] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-02-12T14:15:11.695Z  WARN 168197 --- [springbase] [           main] org.hibernate.dialect.Dialect            : HHH000511: The 2.3.232 version for [org.hibernate.dialect.PostgreSQLDialect] is no longer supported, hence certain features may not work properly. The minimum supported version is 12.0.0. Check the community dialects project for available legacy versions.
+2026-02-12T14:15:11.701Z  WARN 168197 --- [springbase] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-02-12T14:15:11.712Z  INFO 168197 --- [springbase] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
 	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
 	Database driver: undefined/unknown
 	Database version: 2.3.232
@@ -84,11 +84,11 @@ Progress (1): 3.1 kBProgress (1): 8.0 kBProgress (1): 8.0 kBProgress (1): 13 
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2026-02-07T08:35:01.950Z  INFO 66102 --- [springbase] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-02-07T08:35:01.980Z  INFO 66102 --- [springbase] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-02-07T08:35:02.212Z  WARN 66102 --- [springbase] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-02-07T08:35:02.225Z  INFO 66102 --- [springbase] [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
-2026-02-07T08:35:02.359Z  INFO 66102 --- [springbase] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
-2026-02-07T08:35:02.556Z  INFO 66102 --- [springbase] [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:springbase'
-2026-02-07T08:35:02.589Z  INFO 66102 --- [springbase] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 1890 (http) with context path '/'
-2026-02-07T08:35:02.597Z  INFO 66102 --- [springbase] [           main] c.j.springbase.SpringbaseApplication     : Started SpringbaseApplication in 2.571 seconds (process running for 2.749)
+2026-02-12T14:15:12.511Z  INFO 168197 --- [springbase] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-02-12T14:15:12.548Z  INFO 168197 --- [springbase] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-02-12T14:15:13.011Z  WARN 168197 --- [springbase] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-02-12T14:15:13.034Z  INFO 168197 --- [springbase] [           main] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-02-12T14:15:13.207Z  INFO 168197 --- [springbase] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-02-12T14:15:13.527Z  INFO 168197 --- [springbase] [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:springbase'
+2026-02-12T14:15:13.610Z  INFO 168197 --- [springbase] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 1890 (http) with context path '/'
+2026-02-12T14:15:13.619Z  INFO 168197 --- [springbase] [           main] c.j.springbase.SpringbaseApplication     : Started SpringbaseApplication in 5.234 seconds (process running for 5.588)
