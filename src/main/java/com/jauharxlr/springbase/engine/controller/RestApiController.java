@@ -53,7 +53,7 @@ public class RestApiController {
     @Operation(
         summary = "Query a table",
         description = "Fetches records from a user-defined table using PostgREST-style syntax. " +
-                      "**Ownership Security**: If the table contains a 'user_id', 'owner_id', 'company_id' or 'tenant_id' column, the query is automatically filtered to return only records matching the authenticated context. " +
+                      "**Ownership Security**: If the table contains a 'user_id' or 'owner_id' column, the query is automatically filtered to return only records owned by the authenticated user. " +
                       "**Filters**: Supports filters via query parameters (e.g., `?age=gt.25&status=eq.active`). " +
                       "**Operators**: " +
                       "- `eq`: Equals " +
